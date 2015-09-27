@@ -1,5 +1,5 @@
-import * as contracts from "../utils/contracts";
-import {toBoolean,primitiveToObject} from "../utils/native";
+import * as contracts from "../../utils/contracts";
+import {toBoolean,primitiveToObject} from "../../utils/native";
 
 export default function booleanApi (env) {
 	const globalObject = env.global;

@@ -51,6 +51,7 @@ function createDataPropertyDescriptor (value, { configurable = true, enumerable 
 export class ObjectFactory {
 	constructor (env) {
 		this.env = env;
+		this.options = env.options;
 	}
 
 	init () {
@@ -205,11 +206,10 @@ export class ObjectFactory {
 	 * @param {AST|Function} fnOrNode - The AST or function to be used when the function is called.
 	 * @param {ObjectType} [proto] - The prototype to use for the function. If no object is provided
 	 * an empty object is used.
-	 * @param {Object} [descriptor] - Property values to be used for the prototype.
-	 * @param {Boolean} [strict] - Indicates whether the function is in stict mode.
+	 * @param {Object} [options] - Property values to be used for the prototype.
 	 * @returns {FunctionType} The function instance.
 	 */
-	createFunction (fnOrNode, proto, descriptor, strict) {
+	createFunction (fnOrNode, proto, { configurable = false, enumerable = false, writable = true, strict = false, name = "anonymous" } = {}) {
 		let instance;
 
 		if (typeof fnOrNode === "function") {
@@ -218,7 +218,13 @@ export class ObjectFactory {
 			instance = new FunctionType(fnOrNode);
 		}
 
-		instance.init(this, proto, descriptor, strict);
+		instance.init(this, proto, { configurable, enumerable, writable }, strict);
+		instance.name = name;
+
+		if (this.options.ecmaVersion > 5) {
+			instance.defineOwnProperty("name", { value: this.createPrimitive(name), configurable: true }, true, this.env);
+		}
+		
 		setProto("Function", instance, this.env);
 		return instance;
 	}

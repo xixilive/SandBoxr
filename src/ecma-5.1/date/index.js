@@ -1,5 +1,5 @@
-import {toPrimitive,toNumber,toNativeFunction} from "../utils/native";
-import {map} from "../utils/async";
+import {toPrimitive,toNumber,toNativeFunction} from "../../utils/native";
+import {map} from "../../utils/async";
 
 const staticMethods = ["now"];
 const protoMethods = ["getDate", "getDay", "getFullYear", "getHours", "getMilliseconds", "getMinutes", "getMonth", "getMilliseconds", "getMinutes", "getMonth", "getSeconds", "getTime", "getTimezoneOffset", "getUTCDay", "getUTCDate", "getUTCFullYear", "getUTCHours", "getUTCMilliseconds", "getUTCMinutes", "getUTCMonth", "getUTCSeconds", "getYear", "toDateString", "toGMTString", "toISOString", "toJSON", "toLocaleString", "toLocaleDateString", "toLocaleTimeString", "toString", "toTimeString", "toUTCString"];

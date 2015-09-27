@@ -141,13 +141,12 @@ export class ObjectType {
 		return delete this.properties[name];
 	}
 
-	define (name, value, descriptor) {
+	define (name, value, { configurable = true, enumerable = false, writable = true } = {}) {
 		// this method is intended for external usage only - it provides a way to define
 		// methods and properties and overwrite any existing properties even if they are
 		// not configurable
-		descriptor = descriptor || { configurable: true, enumerable: false, writable: true };
-		descriptor.value = value;
-
+		
+		let descriptor = { value, configurable, enumerable, writable };
 		this.properties[name] = new PropertyDescriptor(this, descriptor);
 		this.version++;
 	}

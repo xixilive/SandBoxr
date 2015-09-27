@@ -46,7 +46,8 @@ export class Scope {
 			let value = UNDEFINED;
 			if (decl.type === "FunctionDeclaration") {
 				// functions can be used before they are defined
-				value = env.objectFactory.createFunction(decl, null, null, strict || contracts.isStrictNode(decl.body.body));
+				let strictFunc = strict || contracts.isStrictNode(decl.body.body);
+				value = env.objectFactory.createFunction(decl, undefined, { strict: strictFunc });
 				value.bindScope(this);
 			} else if (this.scope.hasProperty(name)) {
 				return;

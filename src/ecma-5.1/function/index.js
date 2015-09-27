@@ -1,9 +1,9 @@
-import {NativeFunctionType} from "../types/native-function-type";
-import {UNDEFINED} from "../types/primitive-type";
-import * as contracts from "../utils/contracts";
-import {execute as exec} from "../utils/func";
-import {toString,toObject,toArray} from "../utils/native";
-import {map} from "../utils/async";
+import {NativeFunctionType} from "../../types/native-function-type";
+import {UNDEFINED} from "../../types/primitive-type";
+import * as contracts from "../../utils/contracts";
+import {execute as exec} from "../../utils/func";
+import {toString,toObject,toArray} from "../../utils/native";
+import {map} from "../../utils/async";
 
 function defineThis (env, fn, thisArg) {
 	if (fn.builtIn || fn.isStrict()) {
@@ -79,7 +79,7 @@ export default function functionApi (env) {
 
 			wrappedFunc.nativeLength = callee.params.length;
 			wrappedFunc.strict = strict;
-			funcInstance = objectFactory.createFunction(wrappedFunc, null, null, strict);
+			funcInstance = objectFactory.createFunction(wrappedFunc, undefined, { strict });
 			funcInstance.bindScope(env.globalScope);
 		} else {
 			funcInstance = objectFactory.createFunction(function () {});
@@ -90,7 +90,13 @@ export default function functionApi (env) {
 	};
 
 	// the prototype of a function is actually callable and evaluates as a function
-	let proto = new NativeFunctionType(function () {});
+	let proto = new NativeFunctionType(function () {
+		if (this.isNew) {
+			return this.raise(new TypeError("Function.protoype is not a constructor"));
+		}
+
+		return UNDEFINED;
+	});
 
 	funcCtor.nativeLength = 1;
 	funcClass = objectFactory.createFunction(funcCtor, proto, frozen);
@@ -98,7 +104,11 @@ export default function functionApi (env) {
 
 	globalObject.define("Function", funcClass);
 
-	proto.define("length", objectFactory.createPrimitive(0), frozen);
+	proto.define("length", objectFactory.createPrimitive(0), { writable: false });
+
+	if (env.options.ecmaVersion > 5) {
+		proto.define("name", objectFactory.createPrimitive(""), { writable: false });
+	}
 
 	// function itself is a function
 	funcClass.setPrototype(proto);
@@ -166,4 +176,27 @@ export default function functionApi (env) {
 
 		return boundFunc;
 	}, 1, "Function.prototype.bind"));
+
+	let thrower = function () {
+		if (this.isStrict()) {
+			throw new TypeError("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
+		}
+
+		return undefined;
+	};
+
+	let throwerFunc = objectFactory.createBuiltInFunction(thrower);
+
+	let prop = {
+		get: throwerFunc,
+		getter: thrower,
+		set: throwerFunc,
+		setter: thrower,
+		enumerable: false,
+		configurable: false
+	};
+
+	proto.defineOwnProperty("caller", prop, false, env);
+	proto.defineOwnProperty("callee", prop, false, env);
+	proto.defineOwnProperty("arguments", prop, false, env);
 }

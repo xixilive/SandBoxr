@@ -1,5 +1,5 @@
-import {toPrimitive,toNumber,primitiveToObject} from "../utils/native";
-import * as contracts from "../utils/contracts";
+import {toPrimitive,toNumber,primitiveToObject} from "../../utils/native";
+import * as contracts from "../../utils/contracts";
 
 const constants = ["MAX_VALUE", "MIN_VALUE", "NaN", "NEGATIVE_INFINITY", "POSITIVE_INFINITY"];
 const protoMethods = ["toExponential", "toPrecision", "toLocaleString"];

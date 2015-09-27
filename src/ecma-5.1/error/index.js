@@ -1,5 +1,5 @@
-import {toString} from "../utils/native";
-import * as contracts from "../utils/contracts";
+import {toString} from "../../utils/native";
+import * as contracts from "../../utils/contracts";
 
 const errorTypes = ["TypeError", "ReferenceError", "SyntaxError", "RangeError", "URIError", "EvalError"];
 

@@ -19,14 +19,22 @@ result;
 <button id="acornExec">Exec (Acorn)</button>
 <button id="esprimaExec">Exec (Esprima)</button>
 <button id="stepExec">Step</button>
+<label>ECMA 2015
+<input type="checkbox" id="ecma6"></input>
+</label>
 <fieldset><legend>Result</legend><pre id="result"></pre></fieldset>
 <fieldset><legend>Tree</legend><pre id="tree"></pre></fieldset>
 
 <script type="text/javascript">
 	var execution;
 
+	function isEcma6 () {
+		return document.getElementById("ecma6").checked;
+	}
+
 	document.getElementById("acornExec").onclick = function () {
-		executeAst(acorn.parse);
+		var ecmaVersion = isEcma6() ? 6 : 5;
+		executeAst(function (text) { return acorn.parse(text, { ecmaVersion: ecmaVersion }); });
 	};
 
 	document.getElementById("esprimaExec").onclick = function () {
@@ -59,13 +67,15 @@ result;
 	}
 
 	function executeAst (parser) {
+		var ecmaVersion = isEcma6() ? 6 : 5;
+
 		var code = document.getElementById("codeArea").value;
 		var ast = parser(code);
 
 		document.getElementById("tree").innerHTML = JSON.stringify(ast, null, 2);
 
 		debugger;
-		var runner = new SandBoxr(ast, { parser: parser });
+		var runner = new SandBoxr(ast, { parser: parser, ecmaVersion: ecmaVersion });
 		runner.execute().then(function (value) {
 			writeValue(value && value.toNative());
 		}, function (err) {

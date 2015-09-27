@@ -1,6 +1,6 @@
-import {NULL} from "../types/primitive-type";
-import {toString,toInt32,toNativeFunction} from "../utils/native";
-import * as contracts from "../utils/contracts";
+import {NULL} from "../../types/primitive-type";
+import {toString,toInt32,toNativeFunction} from "../../utils/native";
+import * as contracts from "../../utils/contracts";
 
 export default function regexApi (env) {
 	const globalObject = env.global;

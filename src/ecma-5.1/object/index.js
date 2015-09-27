@@ -1,8 +1,8 @@
-import {ObjectType} from "../types/object-type";
-import {UNDEFINED,NULL} from "../types/primitive-type";
-import {toString,toBoolean,toObject} from "../utils/native";
-import * as contracts from "../utils/contracts";
-import {execute as exec, call} from "../utils/func";
+import {ObjectType} from "../../types/object-type";
+import {UNDEFINED,NULL} from "../../types/primitive-type";
+import {toString,toBoolean,toObject} from "../../utils/native";
+import * as contracts from "../../utils/contracts";
+import {execute as exec, call} from "../../utils/func";
 
 function isObject (obj) {
 	if (!obj) {

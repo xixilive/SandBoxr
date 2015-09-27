@@ -1,8 +1,8 @@
-import {UNDEFINED,NULL} from "../types/primitive-type";
-import {toString,toInteger,toUInt32,toPrimitive,primitiveToObject} from "../utils/native";
-import * as contracts from "../utils/contracts";
-import {execute as exec} from "../utils/func";
-import {exhaust as x, map} from "../utils/async";
+import {UNDEFINED,NULL} from "../../types/primitive-type";
+import {toString,toInteger,toUInt32,toPrimitive,primitiveToObject} from "../../utils/native";
+import * as contracts from "../../utils/contracts";
+import {execute as exec} from "../../utils/func";
+import {exhaust as x, map} from "../../utils/async";
 
 const protoMethods = ["charAt", "charCodeAt", "concat", "indexOf", "lastIndexOf", "localeCompare", "substr", "toLocaleLowerCase", "toLocaleUpperCase", "toLowerCase", "toUpperCase"];
 const slice = Array.prototype.slice;

@@ -1,8 +1,8 @@
-import {UNDEFINED} from "../types/primitive-type";
-import * as contracts from "../utils/contracts";
-import {execute as exec, tryExecute as tryExec} from "../utils/func";
-import {toString,toNumber,toArray} from "../utils/native";
-import {map} from "../utils/async";
+import {UNDEFINED} from "../../types/primitive-type";
+import * as contracts from "../../utils/contracts";
+import {execute as exec, tryExecute as tryExec} from "../../utils/func";
+import {toString,toNumber,toArray} from "../../utils/native";
+import {map} from "../../utils/async";
 
 const primitives = {
 	"String": true,

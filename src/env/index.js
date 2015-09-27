@@ -3,14 +3,16 @@ import {ExecutionContext} from "../execution-context";
 import {DeclarativeEnvironment} from "./declarative-environment";
 import {ObjectEnvironment} from "./object-environment";
 import {Reference} from "./reference";
-import api from "../ecma-5.1";
+import ecma5 from "../ecma-5.1";
+import ecma6 from "../ecma-6";
 import operators from "../utils/operators";
 import * as contracts from "../utils/contracts";
 import {Scope} from "./scope";
 
 let defaultOptions = {
 	allowDebugger: false,
-	useStrict: false
+	useStrict: false,
+	ecmaVersion: 5
 };
 
 export class Environment {
@@ -20,11 +22,31 @@ export class Environment {
 		this.globalScope = null;
 
 		this.options = Object.assign({}, defaultOptions, options);
-		api(this);
+		(options.ecmaVersion === 6 ? ecma6 : ecma5)(this);
 
 		// todo: improve this
 		this.ops = Object.assign(operators, options.operators);
 		this.ops.env = this;
+
+		this.objectFactory.init();
+
+		if (options.exclude && options.exclude.length > 0) {
+			options.exclude.forEach(name => {
+				let segments = name.split(".");
+				let parent = this.global;
+
+				while (segments.length > 1) {
+					parent = parent.getValue(segments.shift());
+
+					// api not defined - assume user error?
+					if (!parent) {
+						return;
+					}
+				}
+
+				parent.remove(segments.shift());
+			});
+		}
 	}
 
 	/**

@@ -38,13 +38,13 @@ export class FunctionType extends ObjectType {
 	}
 
 	initStrict (objectFactory) {
-		if (this.isStrict()) {
-			let throwerProps = objectFactory.createThrower("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
-			this.defineOwnProperty("caller", throwerProps);
-			this.defineOwnProperty("arguments", throwerProps);
-		} else {
-			this.defineOwnProperty("caller", { value: objectFactory.createPrimitive(undefined) });
-		}
+		// if (this.isStrict()) {
+		// 	let throwerProps = objectFactory.createThrower("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
+		// 	this.defineOwnProperty("caller", throwerProps);
+		// 	this.defineOwnProperty("arguments", throwerProps);
+		// } else {
+		// 	this.defineOwnProperty("caller", { value: objectFactory.createPrimitive(undefined) });
+		// }
 	}
 
 	bindThis (thisArg) {

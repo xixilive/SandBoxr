@@ -1,4 +1,4 @@
-import {toNativeFunction} from "../utils/native";
+import {toNativeFunction} from "../../utils/native";
 
 const constants = ["E", "LN10", "LN2", "LOG10E", "LOG2E", "PI", "SQRT1_2", "SQRT2"];
 const methods = ["abs", "acos", "asin", "atan", "atan2", "ceil", "cos", "exp", "floor", "log", "max", "min", "pow", "random", "round", "sin", "sqrt", "tan"];
