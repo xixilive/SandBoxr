@@ -1,5 +1,6 @@
 import ecma5 from "../ecma-5.1/";
 import {toInteger} from "../utils/native";
+import setAPI from "./set/";
 
 export default function (env) {
 	ecma5(env);
@@ -34,4 +35,6 @@ export default function (env) {
 
 	let boolProto = env.global.getValue("Boolean").getValue("prototype");
 	boolProto.className = "Object";
+
+	setAPI(env);
 }

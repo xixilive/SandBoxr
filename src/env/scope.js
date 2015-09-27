@@ -75,6 +75,7 @@ export class Scope {
 		scope.createVariable("arguments");
 		scope.putValue("arguments", argumentList);
 
+		params = params || [];
 		params.forEach(function (param, index) {
 			contracts.assertIsValidParameterName(param.name, strict);
 

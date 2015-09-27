@@ -43,7 +43,7 @@ export function* call (env, fn, params, args, thisArg, callee) {
 	});
 }
 
-export function* tryExecute (env, obj, name) {
+export function* tryExecute (env, obj, name, args = []) {
 	let fn = obj.getProperty(name);
 	if (!fn) {
 		return false;
@@ -53,14 +53,13 @@ export function* tryExecute (env, obj, name) {
 
 	if (fn && fn.className === "Function") {
 		let scope = fn.createScope(env, obj);
+		scope.loadArgs(fn.node && fn.node.params, args, fn);
 		scope.init(fn.node && fn.node.body);
 
 		let executionResult = yield scope.use(function* () {
 			if (fn.native) {
-				return yield fn.nativeFunction.apply(env.createExecutionContext(obj, obj), []);
+				return yield fn.nativeFunction.apply(env.createExecutionContext(obj, obj), args);
 			}
-
-			scope.loadArgs(fn.node.params, [], fn);
 
 			let result = yield env.createExecutionContext(fn.node.body, fn.node).execute();
 			return result && result.result;

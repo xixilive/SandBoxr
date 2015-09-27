@@ -8,6 +8,8 @@ import {StringType} from "./string-type";
 import {DateType} from "./date-type";
 import {ErrorType} from "./error-type";
 import {ArgumentType} from "./argument-type";
+import {SetType} from "./set-type";
+import {IteratorType} from "./iterator-type";
 import * as contracts from "../utils/contracts";
 
 let orphans = Object.create(null);
@@ -111,6 +113,10 @@ export class ObjectFactory {
 				instance = new ArrayType();
 				break;
 
+			case "Set":
+				instance = new SetType();
+				break;
+
 			case "Error":
 			case "TypeError":
 			case "ReferenceError":
@@ -201,6 +207,22 @@ export class ObjectFactory {
 		return instance;
 	}
 
+	createIterator (iterable) {
+		let self = this;
+		let instance = new IteratorType(iterable);
+
+		instance.define("next", this.createBuiltInFunction(function () {
+			let current = instance.next();
+
+			let result = self.createObject();
+			result.defineOwnProperty("done", { value: self.createPrimitive(current.done) });
+			result.defineOwnProperty("value", { value: current.value || UNDEFINED });
+			return result;
+		}));
+
+		return instance;
+	}
+
 	/**
 	 * Creates a function instance.
 	 * @param {AST|Function} fnOrNode - The AST or function to be used when the function is called.
@@ -224,7 +246,7 @@ export class ObjectFactory {
 		if (this.options.ecmaVersion > 5) {
 			instance.defineOwnProperty("name", { value: this.createPrimitive(name), configurable: true }, true, this.env);
 		}
-		
+
 		setProto("Function", instance, this.env);
 		return instance;
 	}

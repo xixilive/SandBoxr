@@ -41,6 +41,28 @@ const ops = {
 		return a === b;
 	},
 
+	areSameOrZero (a, b) {
+		if (a.type !== b.type) {
+			return false;
+		}
+
+		if (a.isPrimitive && b.isPrimitive) {
+			if (a.value == null) {
+				return true;
+			}
+
+			if (a.type === "number") {
+				if (isNaN(a.value) && isNaN(b.value)) {
+					return true;
+				}
+			}
+
+			return a.value === b.value;
+		}
+
+		return a === b;
+	},
+
 	*coerciveEquals (a, b) {
 		/* eslint-disable eqeqeq */
 		if (a.isPrimitive && b.isPrimitive) {
