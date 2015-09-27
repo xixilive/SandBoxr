@@ -65,6 +65,7 @@ const visitors = {
 	VariableDeclarator,
 	WithStatement,
 
+	ArrowFunctionExpression: FunctionExpression,
 	ContinueStatement: BreakStatement,
 	IfStatement: ConditionalExpression,
 	NewExpression: CallExpression,
