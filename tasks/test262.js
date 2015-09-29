@@ -48,7 +48,7 @@ gulp.task("test262-6", function () {
 	// types +
 	// white-space +
 
-	return streamer6({ files: ["/language/expressions/**/*.js"] })
+	return streamer6({ files: ["/language/expressions/assignment/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 
