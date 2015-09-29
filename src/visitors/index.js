@@ -22,6 +22,8 @@ import ObjectExpression from "./object-expression";
 import ReturnStatement from "./return-statement";
 import SequenceExpression from "./sequence-expression";
 import SwitchStatement from "./switch-statement";
+import TaggedTemplateExpression from "./tagged-template-expression";
+import TemplateLiteral from "./template-literal";
 import ThisExpression from "./this-expression";
 import ThrowStatement from "./throw-statement";
 import TryStatement from "./try-statement";
@@ -56,6 +58,8 @@ const visitors = {
 	ReturnStatement,
 	SequenceExpression,
 	SwitchStatement,
+	TaggedTemplateExpression,
+	TemplateLiteral,
 	ThisExpression,
 	ThrowStatement,
 	TryStatement,
