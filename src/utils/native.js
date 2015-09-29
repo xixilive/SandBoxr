@@ -4,6 +4,7 @@ import {tryExecute as tryExec} from "../utils/func";
 const sign = Math.sign;
 const floor = Math.floor;
 const abs = Math.abs;
+const MAX_LENGTH = Math.pow(2, 53) - 1;
 
 function* getString (env, value) {
 	if (!value) {
@@ -72,6 +73,20 @@ export function	toObject (env, obj) {
 	}
 
 	return obj;
+}
+
+export function* toLength (env, obj) {
+	let lengthProperty = obj.getProperty("length");
+	if (lengthProperty) {
+		if (env.options.ecmaVersion === 5) {
+			return yield toUInt32(env, lengthProperty.getValue());
+		}
+
+		let length = yield toInteger(env, lengthProperty.getValue());
+		return Math.min(Math.max(length, 0), MAX_LENGTH);
+	}
+
+	return 0;
 }
 
 export function	toArray (obj, length) {

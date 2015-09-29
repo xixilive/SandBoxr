@@ -206,13 +206,15 @@ export default function objectApi (env) {
 		return obj;
 	}, 2, "Object.defineProperties"));
 
-	objectClass.define("getOwnPropertyDescriptor", objectFactory.createBuiltInFunction(function* (obj, prop) {
+	objectClass.define("getOwnPropertyDescriptor", objectFactory.createBuiltInFunction(function* (obj, key) {
 		contracts.assertIsObject(obj, "Object.getOwnPropertyDescriptor");
 
-		prop = yield toString(env, prop);
+		if (!key || !key.isSymbol) {
+			key = yield toString(env, key);
+		}
 
-		if (obj.hasOwnProperty(prop)) {
-			let descriptor = obj.getProperty(prop);
+		if (obj.hasOwnProperty(key)) {
+			let descriptor = obj.getProperty(key);
 
 			let result = objectFactory.createObject();
 			result.putValue("configurable", objectFactory.createPrimitive(descriptor.configurable), false,env );

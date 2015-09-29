@@ -5,8 +5,8 @@ import {PrimitiveType} from "../types/primitive-type";
  * An object which represents a reference to an object's property.
  */
 export class PropertyReference extends Reference {
-	constructor (name, object, env) {
-		super(name, object, env);
+	constructor (key, object, env) {
+		super(key, object, env);
 		this.isPropertyReference = true;
 	}
 
@@ -16,7 +16,7 @@ export class PropertyReference extends Reference {
 	 * @returns {ObjectType} The value.
 	 */
 	getValue () {
-		let prop = this.base.getProperty(this.name);
+		let prop = this.base.getProperty(this.key);
 		return prop && prop.getValue() || new PrimitiveType();
 	}
 
@@ -26,10 +26,10 @@ export class PropertyReference extends Reference {
 	 * @returns {Boolean} The result of the value assignment.
 	 */
 	setValue (value) {
-		if (this.base.hasProperty(this.name)) {
-			this.base.putValue(this.name, value, this.strict, this.env);
+		if (this.base.hasProperty(this.key)) {
+			this.base.putValue(this.key, value, this.strict, this.env);
 		} else {
-			this.base.defineOwnProperty(this.name, { value: value, configurable: true, enumerable: true, writable: true }, this.strict, this.env);
+			this.base.defineOwnProperty(this.key, { value: value, configurable: true, enumerable: true, writable: true }, this.strict, this.env);
 		}
 	}
 
@@ -38,7 +38,7 @@ export class PropertyReference extends Reference {
 	 * @returns {Boolean} The result of the delete operation.
 	 */
 	["delete"] () {
-		return this.base.deleteProperty(this.name, this.env.isStrict());
+		return this.base.deleteProperty(this.key, this.env.isStrict());
 	}
 
 	/**

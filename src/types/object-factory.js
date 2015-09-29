@@ -10,6 +10,7 @@ import {ErrorType} from "./error-type";
 import {ArgumentType} from "./argument-type";
 import {SetType} from "./set-type";
 import {IteratorType} from "./iterator-type";
+import {SymbolType} from "./symbol-type";
 import * as contracts from "../utils/contracts";
 
 let orphans = Object.create(null);
@@ -91,6 +92,10 @@ export class ObjectFactory {
 
 			case "Undefined":
 				return UNDEFINED;
+
+			case "Symbol":
+				instance = new SymbolType(value);
+				break;
 
 			case "String":
 				instance = new StringType(value);

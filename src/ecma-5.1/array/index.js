@@ -1,11 +1,11 @@
 import {UNDEFINED} from "../../types/primitive-type";
 import * as contracts from "../../utils/contracts";
 import {tryExecute as tryExec} from "../../utils/func";
-import {toString,toPrimitive,toInteger,toUInt32,toBoolean,toObject,toArray} from "../../utils/native";
+import {toLength,toString,toPrimitive,toInteger,toBoolean,toObject,toArray} from "../../utils/native";
 import iterate from "../../iterators";
 import {exhaust as x} from "../../utils/async";
 
-function getStartIndex (index, length) {
+export function getStartIndex (index, length) {
 	if (index < 0) {
 		return Math.max(length - Math.abs(index), 0);
 	}
@@ -13,7 +13,7 @@ function getStartIndex (index, length) {
 	return Math.min(index || 0, length);
 }
 
-function getEndIndex (index, length) {
+export function getEndIndex (index, length) {
 	if (index < 0) {
 		return Math.max(length + index, 0);
 	}
@@ -21,34 +21,26 @@ function getEndIndex (index, length) {
 	return Math.min(index, length);
 }
 
-function* getLength (env, source) {
-	if (source.hasProperty("length")) {
-		return yield toUInt32(env, source.getValue("length"));
+export function* executeCallback (env, callback, entry, thisArg, arr) {
+	if (!thisArg) {
+		thisArg = callback.isStrict() ? UNDEFINED : env.global;
 	}
 
-	return 0;
+	let scope = env.createScope(thisArg);
+	scope.init(callback.node.body);
+
+	let args = [entry.value, env.objectFactory.createPrimitive(entry.index), arr];
+	scope.loadArgs(callback.node.params, args, callback);
+
+	return yield scope.use(function* () {
+		let executionResult = yield env.createExecutionContext(callback.node.body, callback.node).execute();
+		return executionResult ? executionResult.result : UNDEFINED;
+	});
 }
 
 export default function arrayApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
-
-	function* executeCallback (callback, entry, thisArg, arr) {
-		if (!thisArg) {
-			thisArg = callback.isStrict() ? UNDEFINED : env.global;
-		}
-
-		let scope = env.createScope(thisArg);
-		scope.init(callback.node.body);
-
-		let args = [entry.value, objectFactory.createPrimitive(entry.index), arr];
-		scope.loadArgs(callback.node.params, args, callback);
-
-		return yield scope.use(function* () {
-			let executionResult = yield env.createExecutionContext(callback.node.body, callback.node).execute();
-			return executionResult ? executionResult.result : UNDEFINED;
-		});
-	}
 
 	function* executeAccumulator (callback, priorValue, entry, arr) {
 		let scope = env.createScope();
@@ -98,7 +90,7 @@ export default function arrayApi (env) {
 	}, 1, "Array.isArray"));
 
 	proto.define("push", objectFactory.createBuiltInFunction(function* (...items) {
-		let start = yield getLength(env, this.node);
+		let start = yield toLength(env, this.node);
 		let i = 0;
 
 		for (let length = items.length; i < length; i++) {
@@ -112,7 +104,7 @@ export default function arrayApi (env) {
 
 	proto.define("pop", objectFactory.createBuiltInFunction(function* () {
 		let obj;
-		let i = yield getLength(env, this.node);
+		let i = yield toLength(env, this.node);
 
 		if (i > 0) {
 			i--;
@@ -129,7 +121,7 @@ export default function arrayApi (env) {
 
 	proto.define("shift", objectFactory.createBuiltInFunction(function* () {
 		let obj;
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		let i = 0;
 
 		if (length > 0) {
@@ -154,7 +146,7 @@ export default function arrayApi (env) {
 	}, 0, "Array.prototype.shift"));
 
 	proto.define("unshift", objectFactory.createBuiltInFunction(function* (...items) {
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		let argCount = items.length;
 		let i = length;
 		let toIndex, fromIndex;
@@ -183,7 +175,7 @@ export default function arrayApi (env) {
 
 	proto.define("slice", objectFactory.createBuiltInFunction(function* (begin, end) {
 		let source = this.node;
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		begin = begin ? (yield toInteger(env, begin)) : 0;
 
 		if (!end || end.type === "undefined") {
@@ -206,7 +198,7 @@ export default function arrayApi (env) {
 	}, 2, "Array.prototype.slice"));
 
 	proto.define("splice", objectFactory.createBuiltInFunction(function* (start, deleteCount, ...elements) {
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 
 		start = yield toInteger(env, start);
 		if (start < 0) {
@@ -302,7 +294,7 @@ export default function arrayApi (env) {
 	}, 1, "Array.prototype.concat"));
 
 	function* join (separator) {
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		separator = arguments.length === 0 || separator === UNDEFINED ? "," : (yield toPrimitive(env, separator, "string"));
 		let stringValues = [];
 		let stringValue;
@@ -328,7 +320,7 @@ export default function arrayApi (env) {
 
 	proto.define("indexOf", objectFactory.createBuiltInFunction(function* (searchElement, fromIndex) {
 		searchElement = searchElement || UNDEFINED;
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		let index = arguments.length === 1 ? 0 : (yield toInteger(env, fromIndex));
 		const notFound = objectFactory.createPrimitive(-1);
 
@@ -349,7 +341,7 @@ export default function arrayApi (env) {
 
 	proto.define("lastIndexOf", objectFactory.createBuiltInFunction(function* (searchElement, fromIndex) {
 		searchElement = searchElement || UNDEFINED;
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		let index = arguments.length === 1 ? length - 1 : (yield toInteger(env, fromIndex));
 
 		if (index < 0) {
@@ -367,17 +359,17 @@ export default function arrayApi (env) {
 
 	proto.define("forEach", objectFactory.createBuiltInFunction(function* (callback, thisArg) {
 		let arr = toObject(env, this.node);
-		let length = yield getLength(env, arr);
+		let length = yield toLength(env, arr);
 		contracts.assertIsFunction(callback, arr);
 
 		for (let entry of iterate.forward(env, arr, 0, length)) {
-			yield executeCallback(callback, entry, thisArg, arr);
+			yield executeCallback(env, callback, entry, thisArg, arr);
 		}
 	}, 1, "Array.prototype.forEach"));
 
 	proto.define("map", objectFactory.createBuiltInFunction(function* (callback, thisArg) {
 		let arr = toObject(env, this.node);
-		let length = yield getLength(env, arr);
+		let length = yield toLength(env, arr);
 		contracts.assertIsNotNullOrUndefined(arr, "Array.prototype.map");
 		contracts.assertIsFunction(callback, arr);
 
@@ -385,7 +377,7 @@ export default function arrayApi (env) {
 		newArray.putValue("length", objectFactory.createPrimitive(length), true, env);
 
 		for (let entry of iterate.forward(env, arr, 0, length)) {
-			let value = yield executeCallback(callback, entry, thisArg, arr);
+			let value = yield executeCallback(env, callback, entry, thisArg, arr);
 			newArray.defineOwnProperty(entry.index, createIndexProperty(value), true, env);
 		}
 
@@ -395,14 +387,14 @@ export default function arrayApi (env) {
 	proto.define("filter", objectFactory.createBuiltInFunction(function* (callback, thisArg) {
 		contracts.assertIsNotNullOrUndefined(this.node, "Array.prototype.filter");
 		let arr = toObject(env, this.node);
-		let length = yield getLength(env, arr);
+		let length = yield toLength(env, arr);
 		contracts.assertIsFunction(callback, arr);
 
 		let newArray = objectFactory.create("Array");
 		let index = 0;
 
 		for (let entry of iterate.forward(env, arr, 0, length)) {
-			let passed = toBoolean(yield executeCallback(callback, entry, thisArg, arr));
+			let passed = toBoolean(yield executeCallback(env, callback, entry, thisArg, arr));
 			if (passed) {
 				newArray.defineOwnProperty(index++, createIndexProperty(entry.value), true, env);
 			}
@@ -414,11 +406,11 @@ export default function arrayApi (env) {
 	proto.define("every", objectFactory.createBuiltInFunction(function* (callback, thisArg) {
 		contracts.assertIsNotNullOrUndefined(this.node, "Array.prototype.every");
 		let arr = toObject(env, this.node);
-		let length = yield getLength(env, arr);
+		let length = yield toLength(env, arr);
 		contracts.assertIsFunction(callback, arr);
 
 		for (let entry of iterate.forward(env, arr, 0, length)) {
-			let passed = toBoolean(yield executeCallback(callback, entry, thisArg, arr));
+			let passed = toBoolean(yield executeCallback(env, callback, entry, thisArg, arr));
 			if (!passed) {
 				return objectFactory.createPrimitive(false);
 			}
@@ -430,11 +422,11 @@ export default function arrayApi (env) {
 	proto.define("some", objectFactory.createBuiltInFunction(function* (callback, thisArg) {
 		contracts.assertIsNotNullOrUndefined(this.node, "Array.prototype.some");
 		let arr = toObject(env, this.node);
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		contracts.assertIsFunction(callback, this.node);
 
 		for (let entry of iterate.forward(env, arr, 0, length)) {
-			let passed = toBoolean(yield executeCallback(callback, entry, thisArg, arr));
+			let passed = toBoolean(yield executeCallback(env, callback, entry, thisArg, arr));
 			if (passed) {
 				return objectFactory.createPrimitive(true);
 			}
@@ -446,7 +438,7 @@ export default function arrayApi (env) {
 	proto.define("reduce", objectFactory.createBuiltInFunction(function* (callback, initialValue) {
 		contracts.assertIsNotNullOrUndefined(this.node, "Array.prototype.reduce");
 		let arr = toObject(env, this.node);
-		let length = yield getLength(env, arr);
+		let length = yield toLength(env, arr);
 		contracts.assertIsFunction(callback, arr);
 
 		let hasInitialValue = false;
@@ -481,7 +473,7 @@ export default function arrayApi (env) {
 	}, 1, "Array.prototype.reduce"));
 
 	proto.define("reduceRight", objectFactory.createBuiltInFunction(function* (callback, initialValue) {
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		contracts.assertIsNotNullOrUndefined(this.node, "Array.prototype.reduceRight");
 		let arr = toObject(env, this.node);
 		contracts.assertIsFunction(callback, arr);
@@ -518,7 +510,7 @@ export default function arrayApi (env) {
 	}, 1, "Array.prototype.reduceRight"));
 
 	proto.define("reverse", objectFactory.createBuiltInFunction(function* () {
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		let middle = Math.floor(length / 2);
 		let lower = 0;
 		let upper, upperValue, lowerValue;
@@ -551,7 +543,7 @@ export default function arrayApi (env) {
 	proto.define("sort", objectFactory.createBuiltInFunction(function* (compareFunction) {
 		let executionContext = this;
 		let arr = this.node;
-		let length = yield getLength(env, arr);
+		let length = yield toLength(env, arr);
 		let i = 0;
 
 		let comparer;
@@ -608,7 +600,7 @@ export default function arrayApi (env) {
 	}, 1, "Array.prototype.sort"));
 
 	proto.define("toLocaleString", objectFactory.createBuiltInFunction(function* () {
-		let length = yield getLength(env, this.node);
+		let length = yield toLength(env, this.node);
 		let arr = new Array(length);
 		let i = 0;
 		let current;

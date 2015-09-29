@@ -1,11 +1,11 @@
 import * as contracts from "../utils/contracts";
 
 export class Reference {
-	constructor (name, base, env) {
+	constructor (key, base, env) {
 		this.isReference = true;
 		this.unqualified = false;
 
-		this.name = name;
+		this.key = key;
 		this.base = base;
 		this.env = env;
 		this.strict = env.isStrict();
@@ -18,10 +18,10 @@ export class Reference {
 	 */
 	getValue () {
 		if (!this.base) {
-			throw new ReferenceError(`${this.name} is not defined`);
+			throw new ReferenceError(`${this.key} is not defined`);
 		}
 
-		return this.base.getValue(this.name, this.strict);
+		return this.base.getValue(this.key, this.strict);
 	}
 
 	/**
@@ -31,15 +31,17 @@ export class Reference {
 	 */
 	setValue (value) {
 		if (this.base) {
-			return this.base.putValue(this.name, value, this.strict);
+			return this.base.putValue(this.key, value, this.strict);
 		}
 
-		contracts.assertIsValidIdentifier(this.name, this.strict);
+		// check identifier before strict
+		contracts.assertIsValidIdentifier(this.key, this.strict);
+
 		if (this.strict) {
-			throw new ReferenceError(`${this.name} is not defined`);
+			throw new ReferenceError(`${this.key} is not defined`);
 		}
 
-		return this.env.global.defineOwnProperty(this.name, {
+		return this.env.global.defineOwnProperty(this.key, {
 			value: value,
 			configurable: true,
 			enumerable: true,
@@ -55,7 +57,7 @@ export class Reference {
 	 */
 	["delete"] () {
 		if (this.base) {
-			return this.base.deleteVariable(this.name);
+			return this.base.deleteVariable(this.key);
 		}
 
 		return true;
