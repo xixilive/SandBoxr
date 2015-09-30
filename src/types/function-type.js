@@ -2,6 +2,17 @@ import {ObjectType} from "./object-type";
 import {PropertyDescriptor} from "./property-descriptor";
 import * as contracts from "../utils/contracts";
 
+function getParameterLength (params) {
+	for (let i = 0, ln = params.length; i < ln; i++) {
+		// parameter length should only include the first "Formal" parameters
+		if (params[i].type !== "Identifier") {
+			return i;
+		}
+	}
+
+	return params.length;
+}
+
 export class FunctionType extends ObjectType {
 	constructor (node) {
 		super();
@@ -9,6 +20,8 @@ export class FunctionType extends ObjectType {
 		this.className = "Function";
 		this.native = false;
 		this.node = node;
+
+		this.arrow = node && node.type === "ArrowFunctionExpression";
 
 		this.boundScope = null;
 		this.boundThis = null;
@@ -20,13 +33,7 @@ export class FunctionType extends ObjectType {
 		}
 
 		// set length property from the number of parameters
-		this.defineOwnProperty("length", {
-			value: objectFactory.createPrimitive(this.node.params.length),
-			configurable: false,
-			enumerable: false,
-			writable: false
-		});
-
+		this.defineOwnProperty("length", { value: objectFactory.createPrimitive(getParameterLength(this.node.params)) });
 		this.initStrict(objectFactory);
 
 		// functions have a prototype

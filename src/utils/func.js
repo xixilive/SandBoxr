@@ -17,7 +17,9 @@ export function* execute (env, fn, params, args, thisArg, callee, isNew) {
 		}
 
 		let executionResult = yield env.createExecutionContext(fn.node.body, callee, isNew).execute();
-		if (executionResult && executionResult.exit && executionResult.result) {
+		let shouldReturn = fn.arrow || (executionResult && executionResult.exit);
+		
+		if (shouldReturn && executionResult.result) {
 			if (!isNew || !executionResult.result.isPrimitive) {
 				return executionResult.result;
 			}

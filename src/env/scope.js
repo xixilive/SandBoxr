@@ -75,22 +75,46 @@ export class Scope {
 		scope.createVariable("arguments");
 		scope.putValue("arguments", argumentList);
 
-		params = params || [];
-		params.forEach(function (param, index) {
-			contracts.assertIsValidParameterName(param.name, strict);
+		let paramLength = 0;
+		if (params) {
+			// only map parameters if we have simple parameters
+			let shouldMap = !callee.isStrict() && params.every(p => p.type === "Identifier");
 
-			if (!callee.isStrict() && !scope.hasProperty(param.name)) {
-				let descriptor = scope.createVariable(param.name);
-				if (args.length > index) {
-					argumentList.mapProperty(index, descriptor);
+			for (let i = 0, ln = params.length; i < ln; i++) {
+				let param = params[i];
+
+				let value, name;
+				if (param.type === "RestElement") {
+					let argsLength = args.length;
+					let rest = env.objectFactory.createArray();
+					let restIndex = 0;
+
+					while (paramLength < argsLength) {
+						rest.putValue(restIndex++, args[paramLength++] || UNDEFINED, true, env);
+					}
+
+					name = param.argument.name;
+					value = rest;
+				} else {
+					name = param.name;
+
+					if (shouldMap && !scope.hasProperty(name)) {
+						let descriptor = scope.createVariable(name);
+						if (args.length > paramLength) {
+							argumentList.mapProperty(paramLength, descriptor);
+						}
+					}
+
+					value = args[paramLength++];
 				}
-			}
 
-			scope.putValue(param.name, args[index] || UNDEFINED);
-		});
+				contracts.assertIsValidParameterName(name, strict);
+				scope.putValue(name, value || UNDEFINED, true, env);
+			}
+		}
 
 		// just set value if additional, unnamed arguments are passed in
-		let i = callee.isStrict() ? 0 : params.length;
+		let i = callee.isStrict() ? 0 : paramLength;
 		let length = args.length;
 
 		for (; i < length; i++) {
@@ -105,7 +129,6 @@ export class Scope {
 		argumentList.defineOwnProperty("length", {
 			value: env.objectFactory.createPrimitive(length),
 			configurable: true,
-			enumerable: false,
 			writable: true
 		});
 	}
