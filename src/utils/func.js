@@ -1,7 +1,7 @@
 import {UNDEFINED} from "../types/primitive-type";
 
 export function* execute (env, fn, params, args, thisArg, callee, isNew) {
-	let scope = fn.createScope(env, thisArg, false);
+	let scope = fn.createScope(env, thisArg, isNew);
 	let returnResult;
 
 	if (isNew) {
@@ -18,7 +18,7 @@ export function* execute (env, fn, params, args, thisArg, callee, isNew) {
 
 		let executionResult = yield env.createExecutionContext(fn.node.body, callee, isNew).execute();
 		let shouldReturn = fn.arrow || (executionResult && executionResult.exit);
-		
+
 		if (shouldReturn && executionResult.result) {
 			if (!isNew || !executionResult.result.isPrimitive) {
 				return executionResult.result;

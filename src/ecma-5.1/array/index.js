@@ -26,7 +26,7 @@ export function* executeCallback (env, callback, entry, thisArg, arr) {
 		thisArg = callback.isStrict() ? UNDEFINED : env.global;
 	}
 
-	let scope = env.createScope(thisArg);
+	let scope = callback.createScope(env, thisArg, false);
 	scope.init(callback.node.body);
 
 	let args = [entry.value, env.objectFactory.createPrimitive(entry.index), arr];
@@ -43,7 +43,7 @@ export default function arrayApi (env) {
 	const objectFactory = env.objectFactory;
 
 	function* executeAccumulator (callback, priorValue, entry, arr) {
-		let scope = env.createScope();
+		let scope = callback.createScope(env);
 		scope.init(callback.node.body);
 
 		let args = [priorValue || UNDEFINED, entry.value || UNDEFINED, objectFactory.createPrimitive(entry.index), arr];

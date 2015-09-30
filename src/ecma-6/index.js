@@ -41,4 +41,23 @@ export default function (env) {
 	arrayAPI(env);
 	symbolAPI(env);
 	setAPI(env);
+
+	let funcProto = env.global.getValue("Function").getValue("prototype");
+
+	let thrower = function () {
+		throw new TypeError("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
+	};
+
+	let throwerFunc = objectFactory.createBuiltInFunction(thrower);
+	let prop = {
+		get: throwerFunc,
+		getter: thrower,
+		set: throwerFunc,
+		setter: thrower,
+		enumerable: false,
+		configurable: false
+	};
+
+	funcProto.define("caller", null, prop);
+	funcProto.define("arguments", null, prop);
 }

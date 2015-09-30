@@ -18,6 +18,7 @@ import LabeledStatement from "./labeled-statement";
 import Literal from "./literal";
 import LogicalExpression from "./logical-expression";
 import MemberExpression from "./member-expression";
+import MetaProperty from "./meta-property";
 import ObjectExpression from "./object-expression";
 import ReturnStatement from "./return-statement";
 import SequenceExpression from "./sequence-expression";
@@ -54,6 +55,7 @@ const visitors = {
 	Literal,
 	LogicalExpression,
 	MemberExpression,
+	MetaProperty,
 	ObjectExpression,
 	ReturnStatement,
 	SequenceExpression,

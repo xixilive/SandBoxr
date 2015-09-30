@@ -70,15 +70,19 @@ export class Scope {
 		let scope = this.scope;
 
 		let strict = env.isStrict() || callee.isStrict();
+		let hasArgsObject = !callee.arrow;
 
-		let argumentList = env.objectFactory.createArguments(args, callee, strict);
-		scope.createVariable("arguments");
-		scope.putValue("arguments", argumentList);
+		let argumentList;
+		if (hasArgsObject) {
+			argumentList = env.objectFactory.createArguments(args, callee, strict);
+			scope.createVariable("arguments");
+			scope.putValue("arguments", argumentList);
+		}
 
 		let paramLength = 0;
 		if (params) {
 			// only map parameters if we have simple parameters
-			let shouldMap = !callee.isStrict() && params.every(p => p.type === "Identifier");
+			let shouldMap = hasArgsObject && !callee.isStrict() && params.every(p => p.type === "Identifier");
 
 			for (let i = 0, ln = params.length; i < ln; i++) {
 				let param = params[i];
@@ -113,24 +117,26 @@ export class Scope {
 			}
 		}
 
-		// just set value if additional, unnamed arguments are passed in
-		let i = callee.isStrict() ? 0 : paramLength;
-		let length = args.length;
+		if (hasArgsObject) {
+			// just set value if additional, unnamed arguments are passed in
+			let i = callee.isStrict() ? 0 : paramLength;
+			let length = args.length;
 
-		for (; i < length; i++) {
-			argumentList.defineOwnProperty(i, {
-				value: args[i],
+			for (; i < length; i++) {
+				argumentList.defineOwnProperty(i, {
+					value: args[i],
+					configurable: true,
+					enumerable: true,
+					writable: true
+				});
+			}
+
+			argumentList.defineOwnProperty("length", {
+				value: env.objectFactory.createPrimitive(length),
 				configurable: true,
-				enumerable: true,
 				writable: true
 			});
 		}
-
-		argumentList.defineOwnProperty("length", {
-			value: env.objectFactory.createPrimitive(length),
-			configurable: true,
-			writable: true
-		});
 	}
 
 	/**

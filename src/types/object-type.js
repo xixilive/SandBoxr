@@ -153,12 +153,18 @@ export class ObjectType {
 		return delete this[source][key];
 	}
 
-	define (key, value, { configurable = true, enumerable = false, writable = true } = {}) {
+	define (key, value, { configurable = true, enumerable = false, writable = true, getter, get, setter, set } = {}) {
 		// this method is intended for external usage only - it provides a way to define
 		// methods and properties and overwrite any existing properties even if they are
 		// not configurable
 
-		let descriptor = { value, configurable, enumerable, writable };
+		let descriptor;
+		if (getter || setter) {
+			descriptor = { getter, get, setter, set, configurable, enumerable };
+		}	else {
+			descriptor = { value, configurable, enumerable, writable };
+		}
+
 		this[getPropertySource(key)][String(key)] = new PropertyDescriptor(this, descriptor);
 		this.version++;
 	}

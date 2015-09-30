@@ -36,12 +36,14 @@ export class FunctionType extends ObjectType {
 		this.defineOwnProperty("length", { value: objectFactory.createPrimitive(getParameterLength(this.node.params)) });
 		this.initStrict(objectFactory);
 
-		// functions have a prototype
-		proto = proto || objectFactory.createObject();
-		this.defineOwnProperty("prototype", { value: proto, configurable: false, enumerable: false, writable: true });
+		if (!this.arrow) {
+			// functions have a prototype
+			proto = proto || objectFactory.createObject();
+			this.defineOwnProperty("prototype", { value: proto, writable: true });
 
-		// set the contructor property as an instance of itself
-		proto.properties.constructor = new PropertyDescriptor(this, { configurable: true, enumerable: false, writable: true, value: this });
+			// set the contructor property as an instance of itself
+			proto.properties.constructor = new PropertyDescriptor(this, { configurable: true, enumerable: false, writable: true, value: this });
+		}
 	}
 
 	initStrict (objectFactory) {
@@ -55,7 +57,7 @@ export class FunctionType extends ObjectType {
 	}
 
 	bindThis (thisArg) {
-		this.boundThis = thisArg;
+		this.boundThis = this.boundThis || thisArg;
 	}
 
 	bindScope (scope) {
@@ -74,15 +76,20 @@ export class FunctionType extends ObjectType {
 		return (this.strict = contracts.isStrictNode(this.node.body.body));
 	}
 
-	createScope (env, thisArg) {
-		// if a parent scope is defined we need to limit the scope to that scope
+	createScope (env, thisArg, isNew) {
+		// if a parent scope is defined we need to limit this scope to that scope
 		let priorScope = env.current.scope;
 
 		if (this.boundScope) {
 			env.setScope(this.boundScope.scope);
 		}
 
-		let scope = env.createScope(this.boundThis || thisArg, priorScope);
+		thisArg = this.boundThis || thisArg;
+		if (this.arrow) {
+			thisArg = env.getThisBinding();
+		}
+
+		let scope = env.createScope(thisArg, priorScope);
 		scope.priorScope = priorScope;
 		return scope;
 	}
