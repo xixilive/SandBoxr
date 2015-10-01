@@ -30,7 +30,7 @@ export function* executeCallback (env, callback, entry, thisArg, arr) {
 	scope.init(callback.node.body);
 
 	let args = [entry.value, env.objectFactory.createPrimitive(entry.index), arr];
-	scope.loadArgs(callback.node.params, args, callback);
+	yield scope.loadArgs(callback.node.params, args, callback);
 
 	return yield scope.use(function* () {
 		let executionResult = yield env.createExecutionContext(callback.node.body, callback.node).execute();
@@ -47,7 +47,7 @@ export default function arrayApi (env) {
 		scope.init(callback.node.body);
 
 		let args = [priorValue || UNDEFINED, entry.value || UNDEFINED, objectFactory.createPrimitive(entry.index), arr];
-		scope.loadArgs(callback.node.params, args, callback);
+		yield scope.loadArgs(callback.node.params, args, callback);
 
 		return yield scope.use(function* () {
 			let executionResult = yield env.createExecutionContext(callback.node.body, callback.node).execute();
@@ -567,7 +567,7 @@ export default function arrayApi (env) {
 				let scope = env.createScope(UNDEFINED);
 				scope.init(compareFunction.node.body);
 
-				scope.loadArgs(compareFunction.node.params, [a, b], compareFunction);
+				x(scope.loadArgs(compareFunction.node.params, [a, b], compareFunction));
 				let executionResult = x(scope.use(function () {
 					return x(executionContext.create(compareFunction.node.body, compareFunction.node).execute());
 				}));

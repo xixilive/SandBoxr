@@ -65,7 +65,7 @@ export class Scope {
 	 * @param {FunctionType} callee - The function
 	 * @returns {void}
 	 */
-	loadArgs (params, args, callee) {
+	*loadArgs (params, args, callee) {
 		let env = this.env;
 		let scope = this.scope;
 
@@ -99,6 +99,14 @@ export class Scope {
 
 					name = param.argument.name;
 					value = rest;
+				} else if (param.type === "AssignmentPattern") {
+					name = param.left.name;
+					value = args[paramLength++];
+
+					if (!value || value === UNDEFINED) {
+						let rightValue = (yield env.createExecutionContext(param.right).execute()).result;
+						value = rightValue && rightValue.getValue();
+					}
 				} else {
 					name = param.name;
 

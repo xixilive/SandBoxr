@@ -8,7 +8,7 @@ export function* execute (env, fn, params, args, thisArg, callee, isNew) {
 		returnResult = thisArg;
 	}
 
-	scope.loadArgs(params, args, fn);
+	yield scope.loadArgs(params, args, fn);
 	scope.init(fn.node && fn.node.body);
 
 	returnResult = yield scope.use(function* () {
@@ -33,7 +33,7 @@ export function* execute (env, fn, params, args, thisArg, callee, isNew) {
 
 export function* call (env, fn, params, args, thisArg, callee) {
 	let scope = fn.createScope(env, thisArg, false);
-	scope.loadArgs(params, args, fn);
+	yield scope.loadArgs(params, args, fn);
 	scope.init(fn.node && fn.node.body);
 
 	return yield scope.use(function* () {
@@ -55,7 +55,7 @@ export function* tryExecute (env, obj, name, args = []) {
 
 	if (fn && fn.className === "Function") {
 		let scope = fn.createScope(env, obj);
-		scope.loadArgs(fn.node && fn.node.params, args, fn);
+		yield scope.loadArgs(fn.node && fn.node.params, args, fn);
 		scope.init(fn.node && fn.node.body);
 
 		let executionResult = yield scope.use(function* () {
