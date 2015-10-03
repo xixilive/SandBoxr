@@ -10,6 +10,10 @@ export class DeclarativeEnvironment {
 		this.env = env;
 	}
 
+	setParent (parent) {
+		this.parent = parent.scope || parent;
+	}
+
 	getReference (name) {
 		let ref = new Reference(name, this, this.env);
 		ref.unqualified = true;

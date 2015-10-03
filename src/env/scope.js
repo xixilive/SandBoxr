@@ -3,6 +3,8 @@ import EstreeWalker from "../estree-walker";
 import {visit as hoister} from "./hoister";
 import * as contracts from "../utils/contracts";
 import rules from "../syntax-rules";
+import {each} from "../utils/async";
+import {declare} from "../utils/assign";
 
 function validateSyntax (root) {
 	for (let node of EstreeWalker.create(root)) {
@@ -58,6 +60,57 @@ export class Scope {
 		});
 	}
 
+	*loadComplexArgs (params, args, callee) {
+		let env = this.env;
+		let strict = env.isStrict() || callee.isStrict();
+
+		// create a temporary scope for the argument declarations
+		let scope = this.createParameterScope();
+
+		let argIndex = 0;
+		let argLength = args.length;
+
+		yield each(params, function* (param, index) {
+			if (param.type === "RestElement") {
+				let rest = env.objectFactory.createArray();
+				let restIndex = 0;
+
+				while (argIndex < argLength) {
+					rest.putValue(restIndex++, args[argIndex++] || UNDEFINED, true, env);
+				}
+
+				scope.putValue(param.name, rest, true, env);
+			} else {
+				yield declare(env, param, args[argIndex++] || UNDEFINED, true);
+			}
+		});
+
+		if (!callee.arrow) {
+			// preserve the passed in arguments, even if defaults are used instead
+			let argumentList = env.objectFactory.createArguments(args, callee, strict);
+			scope.createVariable("arguments");
+			scope.putValue("arguments", argumentList);
+
+			args.forEach(function (value, index) {
+				argumentList.defineOwnProperty(index, {
+					value: value,
+					configurable: true,
+					enumerable: true,
+					writable: true
+				});
+			});
+
+			argumentList.defineOwnProperty("length", {
+				value: env.objectFactory.createPrimitive(args.length),
+				configurable: true,
+				writable: true
+			});
+		}
+
+		// return scope back to main scope
+		this.env.setScope(this.scope);
+	}
+
 	/**
 	 * Loads the arguments into the scope and creates the special `arguments` object.
 	 * @param {AST[]} params - The parameter identifiers
@@ -66,85 +119,74 @@ export class Scope {
 	 * @returns {void}
 	 */
 	*loadArgs (params, args, callee) {
+		if (params && params.some(p => p.type !== "Identifier")) {
+			yield this.loadComplexArgs(params, args, callee);
+			return;
+		}
+
+		// todo: this method is getting far too complex
 		let env = this.env;
 		let scope = this.scope;
 
 		let strict = env.isStrict() || callee.isStrict();
-		let hasArgsObject = !callee.arrow;
 
-		let argumentList;
-		if (hasArgsObject) {
-			argumentList = env.objectFactory.createArguments(args, callee, strict);
-			scope.createVariable("arguments");
-			scope.putValue("arguments", argumentList);
-		}
+		let argumentList = env.objectFactory.createArguments(args, callee, strict);
+		scope.createVariable("arguments");
+		scope.putValue("arguments", argumentList);
 
-		let paramLength = 0;
+		let argsLength = args.length;
 		if (params) {
-			// only map parameters if we have simple parameters
-			let shouldMap = hasArgsObject && !callee.isStrict() && params.every(p => p.type === "Identifier");
+			let shouldMap = !callee.isStrict();
 
 			for (let i = 0, ln = params.length; i < ln; i++) {
 				let param = params[i];
+				let value = args[i] || UNDEFINED;
+				let name = param.name;
 
-				let value, name;
-				if (param.type === "RestElement") {
-					let argsLength = args.length;
-					let rest = env.objectFactory.createArray();
-					let restIndex = 0;
-
-					while (paramLength < argsLength) {
-						rest.putValue(restIndex++, args[paramLength++] || UNDEFINED, true, env);
+				if (shouldMap && !scope.hasProperty(name)) {
+					let descriptor = scope.createVariable(name);
+					if (argsLength > i) {
+						argumentList.mapProperty(i, descriptor);
 					}
+				}
 
-					name = param.argument.name;
-					value = rest;
-				} else if (param.type === "AssignmentPattern") {
-					name = param.left.name;
-					value = args[paramLength++];
-
-					if (!value || value === UNDEFINED) {
-						let rightValue = (yield env.createExecutionContext(param.right).execute()).result;
-						value = rightValue && rightValue.getValue();
-					}
-				} else {
-					name = param.name;
-
-					if (shouldMap && !scope.hasProperty(name)) {
-						let descriptor = scope.createVariable(name);
-						if (args.length > paramLength) {
-							argumentList.mapProperty(paramLength, descriptor);
-						}
-					}
-
-					value = args[paramLength++];
+				if (!shouldMap && i < argsLength) {
+					argumentList.defineOwnProperty(i, {
+						value: value,
+						configurable: true,
+						enumerable: true,
+						writable: true
+					});
 				}
 
 				contracts.assertIsValidParameterName(name, strict);
-				scope.putValue(name, value || UNDEFINED, true, env);
+				scope.putValue(name, value, true, env);
 			}
 		}
 
-		if (hasArgsObject) {
-			// just set value if additional, unnamed arguments are passed in
-			let i = callee.isStrict() ? 0 : paramLength;
-			let length = args.length;
-
-			for (; i < length; i++) {
-				argumentList.defineOwnProperty(i, {
-					value: args[i],
-					configurable: true,
-					enumerable: true,
-					writable: true
-				});
-			}
-
-			argumentList.defineOwnProperty("length", {
-				value: env.objectFactory.createPrimitive(length),
+		// just set value if additional, unnamed arguments are passed in
+		let i = params ? params.length : 0;
+		for (; i < argsLength; i++) {
+			argumentList.defineOwnProperty(i, {
+				value: args[i],
 				configurable: true,
+				enumerable: true,
 				writable: true
 			});
 		}
+
+		argumentList.defineOwnProperty("length", {
+			value: env.objectFactory.createPrimitive(argsLength),
+			configurable: true,
+			writable: true
+		});
+	}
+
+	createParameterScope () {
+		let scope = this.env.createScope();
+		scope.scope.setParent(this.scope.parent);
+		this.scope.setParent(scope);
+		return scope.scope;
 	}
 
 	/**
