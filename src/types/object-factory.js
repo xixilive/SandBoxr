@@ -11,6 +11,7 @@ import {ArgumentType} from "./argument-type";
 import {SetType} from "./set-type";
 import {IteratorType} from "./iterator-type";
 import {SymbolType} from "./symbol-type";
+import {MapType} from "./map-type";
 import * as contracts from "../utils/contracts";
 
 let orphans = Object.create(null);
@@ -120,6 +121,10 @@ export class ObjectFactory {
 
 			case "Set":
 				instance = new SetType();
+				break;
+
+			case "Map":
+				instance = new MapType();
 				break;
 
 			case "Error":

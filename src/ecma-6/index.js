@@ -3,6 +3,7 @@ import {toInteger} from "../utils/native";
 import arrayAPI from "./array/";
 import symbolAPI from "./symbol/";
 import setAPI from "./set/";
+import mapAPI from "./map/";
 import reflectAPI from "./reflect/";
 
 export default function (env) {
@@ -42,7 +43,8 @@ export default function (env) {
 	arrayAPI(env);
 	symbolAPI(env);
 	setAPI(env);
-
+	mapAPI(env);
+	
 	let funcProto = env.global.getValue("Function").getValue("prototype");
 
 	let thrower = function () {
