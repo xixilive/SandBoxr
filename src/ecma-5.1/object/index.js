@@ -1,6 +1,6 @@
 import {ObjectType} from "../../types/object-type";
 import {UNDEFINED,NULL} from "../../types/primitive-type";
-import {toString,toBoolean,toObject} from "../../utils/native";
+import {toString,toBoolean,toObject,toPropertyKey} from "../../utils/native";
 import * as contracts from "../../utils/contracts";
 import {execute as exec, call} from "../../utils/func";
 
@@ -16,7 +16,7 @@ function isObject (obj) {
 	return true;
 }
 
-function* defineProperty (env, obj, name, descriptor) {
+export function* defineProperty (env, obj, name, descriptor, throwOnError = true) {
 	if (!isObject(descriptor)) {
 		let stringValue = yield toString(env, descriptor);
 		throw new TypeError(`Property description must be an object: ${stringValue}`);
@@ -94,9 +94,31 @@ function* defineProperty (env, obj, name, descriptor) {
 		}
 	}
 
-	obj.defineOwnProperty(name, options, true, env);
+	return obj.defineOwnProperty(name, options, throwOnError, env);
 }
 
+export function* getOwnPropertyDescriptor (env, target, propertyKey) {
+	let key = yield toPropertyKey(env, propertyKey);
+
+	if (target.hasOwnProperty(key)) {
+		let descriptor = target.getProperty(key);
+
+		let result = env.objectFactory.createObject();
+		if (descriptor.dataProperty) {
+			result.putValue("value", descriptor.value, false, env);
+			result.putValue("writable", env.objectFactory.createPrimitive(descriptor.writable), false, env);
+		} else {
+			result.putValue("get", descriptor.get || UNDEFINED, false, env);
+			result.putValue("set", descriptor.set || UNDEFINED, false, env);
+		}
+
+		result.putValue("enumerable", env.objectFactory.createPrimitive(descriptor.enumerable), false, env);
+		result.putValue("configurable", env.objectFactory.createPrimitive(descriptor.configurable), false,env );
+		return result;
+	}
+
+	return UNDEFINED;
+}
 export default function objectApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
@@ -186,10 +208,10 @@ export default function objectApi (env) {
 		return obj;
 	}, 2, "Object.create"));
 
-	objectClass.define("defineProperty", objectFactory.createBuiltInFunction(function* (obj, prop, descriptor) {
+	objectClass.define("defineProperty", objectFactory.createBuiltInFunction(function* (obj, propertyKey, descriptor) {
 		contracts.assertIsObject(obj, "Object.defineProperty");
-
-		yield defineProperty(env, obj, yield toString(env, prop), descriptor);
+		let key = yield toPropertyKey(env, propertyKey);
+		yield defineProperty(env, obj, key, descriptor);
 		return obj;
 	}, 3, "Object.defineProperty"));
 
@@ -208,30 +230,7 @@ export default function objectApi (env) {
 
 	objectClass.define("getOwnPropertyDescriptor", objectFactory.createBuiltInFunction(function* (obj, key) {
 		contracts.assertIsObject(obj, "Object.getOwnPropertyDescriptor");
-
-		if (!key || !key.isSymbol) {
-			key = yield toString(env, key);
-		}
-
-		if (obj.hasOwnProperty(key)) {
-			let descriptor = obj.getProperty(key);
-
-			let result = objectFactory.createObject();
-			result.putValue("configurable", objectFactory.createPrimitive(descriptor.configurable), false,env );
-			result.putValue("enumerable", objectFactory.createPrimitive(descriptor.enumerable), false, env);
-
-			if (descriptor.dataProperty) {
-				result.putValue("value", descriptor.value, false, env);
-				result.putValue("writable", objectFactory.createPrimitive(descriptor.writable), false, env);
-			} else {
-				result.putValue("get", descriptor.get || UNDEFINED, false, env);
-				result.putValue("set", descriptor.set || UNDEFINED, false, env);
-			}
-
-			return result;
-		}
-
-		return UNDEFINED;
+		return yield getOwnPropertyDescriptor(env, obj, key);
 	}, 2, "Object.getOwnPropertyDescriptor"));
 
 	objectClass.define("keys", objectFactory.createBuiltInFunction(function (obj) {

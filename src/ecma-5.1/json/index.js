@@ -119,7 +119,8 @@ function* createReplacer (env, replacer) {
 		}
 
 		if (replacer.className === "Array") {
-			let keys = yield* map(toArray(replacer), function* (arg) {
+			let arr = yield toArray(env, replacer);
+			let keys = yield* map(arr, function* (arg) {
 				if (arg.className === "String") {
 					return yield toString(env, arg);
 				}

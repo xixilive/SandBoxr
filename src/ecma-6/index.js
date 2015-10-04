@@ -3,6 +3,7 @@ import {toInteger} from "../utils/native";
 import arrayAPI from "./array/";
 import symbolAPI from "./symbol/";
 import setAPI from "./set/";
+import reflectAPI from "./reflect/";
 
 export default function (env) {
 	ecma5(env);
@@ -60,4 +61,6 @@ export default function (env) {
 
 	funcProto.define("caller", null, prop);
 	funcProto.define("arguments", null, prop);
+
+	reflectAPI(env);
 }

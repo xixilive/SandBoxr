@@ -274,7 +274,15 @@ export class ObjectFactory {
 
 		setProto("Function", instance, this.env);
 		instance.builtIn = true;
-		instance.defineOwnProperty("length", { value: this.createPrimitive(length), configurable: false, enumerable: false, writable: false });
+		instance.defineOwnProperty("length", { value: this.createPrimitive(length), configurable: true });
+
+		if (funcName && this.options.ecmaVersion > 5) {
+			let nameMatcher = /\.?(\w+)$/;
+			let name = nameMatcher.exec(funcName)[1];
+
+			instance.defineOwnProperty("name", { value: this.createPrimitive(name), configurable: true }, true, this.env);
+		}
+
 		return instance;
 	}
 

@@ -24,9 +24,9 @@ export function assertArgIsNotNullOrUndefined (obj) {
 	}
 }
 
-export function	assertIsFunction (obj, toString) {
+export function	assertIsFunction (obj, argName) {
 	if (!obj || obj.className !== "Function") {
-		throw new TypeError("%s is not a function");
+		throw new TypeError(`${argName} is not a function`);
 	}
 }
 
@@ -100,6 +100,10 @@ export function	isValidArrayLength (length) {
 
 export function	isObject (obj) {
 	if (!obj) {
+		return false;
+	}
+
+	if (obj.isSymbol) {
 		return false;
 	}
 

@@ -1,4 +1,4 @@
-import {areSame} from "../utils/operators";
+import * as ops from "../utils/operators";
 import {exhaust as x} from "../utils/async";
 
 const defaultDescriptor = {
@@ -8,10 +8,11 @@ const defaultDescriptor = {
 };
 
 export class PropertyDescriptor {
-	constructor (base, config = defaultDescriptor, value) {
+	constructor (base, config = defaultDescriptor, key) {
 		this.base = base;
 		this.configurable = config.configurable || false;
 		this.enumerable = config.enumerable || false;
+		this.key = key;
 
 		if ("get" in config || "set" in config) {
 			this.dataProperty = false;
@@ -22,7 +23,7 @@ export class PropertyDescriptor {
 		} else {
 			this.writable = config.writable || false;
 			this.dataProperty = true;
-			this.value = value || config.value;
+			this.value = config.value;
 		}
 	}
 
@@ -76,7 +77,7 @@ export class PropertyDescriptor {
 					return false;
 				}
 
-				return !("value" in descriptor) || areSame(this.value, descriptor.value);
+				return !("value" in descriptor) || ops.areSame(this.value, descriptor.value);
 			}
 
 			return true;

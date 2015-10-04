@@ -89,14 +89,24 @@ export function* toLength (env, obj) {
 	return 0;
 }
 
-export function	toArray (obj, length) {
+export function* toPropertyKey (env, key) {
+	if (key.isSymbol) {
+		return key;
+	}
+
+	return yield toString(env, key);
+}
+
+export function* toArray (env, obj, length) {
 	let arr = [];
 
 	if (obj) {
-		let ln = length >= 0 ? length : obj.getValue("length").toNative();
-		let i = 0;
+		if (arguments.length < 3) {
+			length = yield toLength(env, obj);
+		}
 
-		while (i < ln) {
+		let i = 0;
+		while (i < length) {
 			if (obj.hasProperty(i)) {
 				arr[i] = obj.getValue(i);
 			}

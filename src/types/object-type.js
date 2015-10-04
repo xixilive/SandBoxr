@@ -85,7 +85,7 @@ export class ObjectType {
 					configurable: descriptor.configurable,
 					enumerable: descriptor.enumerable,
 					writable: descriptor.writable
-				});
+				}, key);
 
 				this.version++;
 			} else {
@@ -125,8 +125,7 @@ export class ObjectType {
 			return false;
 		}
 
-
-		this[getPropertySource(key)][String(key)] = new PropertyDescriptor(this, descriptor);
+		this[getPropertySource(key)][String(key)] = new PropertyDescriptor(this, descriptor, key);
 		this.version++;
 		return true;
 	}
@@ -165,7 +164,7 @@ export class ObjectType {
 			descriptor = { value, configurable, enumerable, writable };
 		}
 
-		this[getPropertySource(key)][String(key)] = new PropertyDescriptor(this, descriptor);
+		this[getPropertySource(key)][String(key)] = new PropertyDescriptor(this, descriptor, key);
 		this.version++;
 	}
 

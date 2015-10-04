@@ -581,7 +581,7 @@ export default function arrayApi (env) {
 		}
 
 		// to array, run the wrapped comparer, then re-assign indexes
-		let sortedArray = toArray(arr, length)
+		let sortedArray = (yield toArray(env, arr, length))
 			// undefined positions are handled by the underlying sort algorithm, so replace them with the raw primitive value
 			.map(el => { return el.isPrimitive && el.value === undefined ? undefined : el; })
 			.sort(comparer);
