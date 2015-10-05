@@ -217,20 +217,17 @@ export class ObjectFactory {
 		return instance;
 	}
 
-	createIterator (iterable) {
-		let self = this;
-		let instance = new IteratorType(iterable);
-
-		instance.define("next", this.createBuiltInFunction(function () {
-			let current = instance.next();
-
-			let result = self.createObject();
-			result.defineOwnProperty("done", { value: self.createPrimitive(current.done) });
-			result.defineOwnProperty("value", { value: current.value || UNDEFINED });
-			return result;
-		}));
-
+	createIterator (iterable, proto, kind) {
+		let instance = new IteratorType(iterable, kind);
+		instance.setPrototype(proto);
 		return instance;
+	}
+
+	createIteratorResult ({ value, done = false }) {
+		let result = this.createObject();
+		result.defineOwnProperty("done", { value: this.createPrimitive(done) });
+		result.defineOwnProperty("value", { value: value || UNDEFINED });
+		return result;
 	}
 
 	/**

@@ -124,12 +124,11 @@ export default function stringApi (env) {
 		let replacer;
 		if (substrOrFn && substrOrFn.type === "function") {
 			let callee = substrOrFn.native ? substrOrFn : substrOrFn.node;
-			let params = callee.params || [];
 
 			replacer = function () {
 				let thisArg = substrOrFn.isStrict() || substrOrFn.isStrict() ? UNDEFINED : globalObject;
 				let args = slice.call(arguments).map(arg => objectFactory.createPrimitive(arg));
-				let replacedValue = x(exec(env, substrOrFn, params, args, thisArg, callee));
+				let replacedValue = x(exec(env, substrOrFn, args, thisArg, callee));
 				return replacedValue ? x(toString(env, replacedValue)) : undefined;
 			};
 		} else {

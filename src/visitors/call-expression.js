@@ -35,9 +35,8 @@ export default function* CallExpression (context) {
 
 	let native = fn.native;
 	let thisArg = assignThis(context.env, fnMember, fn, isNew, native);
-	let params = native ? [] : fn.node.params;
 	let callee = fnMember;
 
 	callee.identifier = fn.name;
-	return context.result(yield exec(context.env, fn, params, args, thisArg, callee, isNew));
+	return context.result(yield exec(context.env, fn, args, thisArg, callee, isNew));
 }

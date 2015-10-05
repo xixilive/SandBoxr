@@ -42,13 +42,12 @@ export default function (env) {
 
 			contracts.assertIsFunction(setter, "set");
 			let callee = setter.node || setter;
-			let params = callee.params || [];
 
 			for (let entry of iterate.forward(env, iterable, 0, length)) {
 				let key = entry.value.getValue("0");
 				let value = entry.value.getValue("1");
 
-				yield exec(env, setter, params, [key, value], obj, callee);
+				yield exec(env, setter, [key, value], obj, callee);
 			}
 		}
 

@@ -122,12 +122,11 @@ export default function functionApi (env) {
 	}, 0, "Function.prototype.toString"));
 
 	proto.define("call", objectFactory.createBuiltInFunction(function* (thisArg, ...args) {
-		let params = this.node.native ? [] : this.node.node.params;
 		let callee = this.node.native ? this.node : this.node.node;
 		thisArg = defineThis(env, this.node, thisArg);
 		this.node.bindThis(thisArg);
 
-		return yield* exec(env, this.node, params, args, thisArg, callee);
+		return yield* exec(env, this.node, args, thisArg, callee);
 	}, 1, "Function.prototype.call"));
 
 	proto.define("apply", objectFactory.createBuiltInFunction(function* (thisArg, argsArray) {
@@ -138,23 +137,22 @@ export default function functionApi (env) {
 		}
 
 		let args = yield toArray(env, argsArray);
-		let params = this.node.native ? [] : this.node.node.params;
 		let callee = this.node.native ? this.node : this.node.node;
 		thisArg = defineThis(env, this.node, thisArg);
 		this.node.bindThis(thisArg);
 
-		return yield* exec(env, this.node, params, args, thisArg, callee);
+		return yield* exec(env, this.node, args, thisArg, callee);
 	}, 2, "Function.prototype.apply"));
 
 	proto.define("bind", objectFactory.createBuiltInFunction(function* (thisArg, ...args) {
 		let fn = this.node;
-		let params = fn.native ? [] : fn.node.params;
 		let callee = fn.native ? fn : fn.node;
+		let params = callee.params || [];
 		thisArg = defineThis(env, this.node, thisArg);
 
 		let nativeFunc = function* (...additionalArgs) {
 			let mergedArgs = args.concat(additionalArgs);
-			return yield* exec(env, fn, params, mergedArgs, thisArg, callee, this.isNew);
+			return yield* exec(env, fn, mergedArgs, thisArg, callee, this.isNew);
 		};
 
 		nativeFunc.nativeLength = Math.max(params.length - args.length, 0);

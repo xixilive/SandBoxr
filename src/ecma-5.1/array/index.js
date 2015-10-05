@@ -4,6 +4,7 @@ import {tryExecute as tryExec} from "../../utils/func";
 import {toLength,toString,toPrimitive,toInteger,toBoolean,toObject,toArray} from "../../utils/native";
 import iterate from "../../iterators";
 import {exhaust as x} from "../../utils/async";
+import {SymbolType} from "../../types/symbol-type";
 
 export function getStartIndex (index, length) {
 	if (index < 0) {
@@ -29,7 +30,7 @@ export function* executeCallback (env, callback, entry, thisArg, arr) {
 	let scope = callback.createScope(env, thisArg, false);
 	scope.init(callback.node.body);
 
-	let args = [entry.value, env.objectFactory.createPrimitive(entry.index), arr];
+	let args = [entry.value, env.objectFactory.createPrimitive(entry.key), arr];
 	yield scope.loadArgs(callback.node.params, args, callback);
 
 	return yield scope.use(function* () {
@@ -46,7 +47,7 @@ export default function arrayApi (env) {
 		let scope = callback.createScope(env);
 		scope.init(callback.node.body);
 
-		let args = [priorValue || UNDEFINED, entry.value || UNDEFINED, objectFactory.createPrimitive(entry.index), arr];
+		let args = [priorValue || UNDEFINED, entry.value || UNDEFINED, objectFactory.createPrimitive(entry.key), arr];
 		yield scope.loadArgs(callback.node.params, args, callback);
 
 		return yield scope.use(function* () {
@@ -266,7 +267,21 @@ export default function arrayApi (env) {
 		return removed;
 	}, 2, "Array.prototype.splice"));
 
-	proto.define("concat", objectFactory.createBuiltInFunction(function (...arrays) {
+	function isSpreadable (obj) {
+		if (!contracts.isObject(obj)) {
+			return false;
+		}
+
+		let key = SymbolType.getByKey("isConcatSpreadable");
+		let propInfo = obj.getProperty(key);
+		if (propInfo) {
+			return toBoolean(propInfo.getValue());
+		}
+
+		return obj.className === "Array";
+	}
+
+	proto.define("concat", objectFactory.createBuiltInFunction(function* (...arrays) {
 		let newArray = objectFactory.create("Array");
 
 		// add "this" array to bunch
@@ -276,8 +291,9 @@ export default function arrayApi (env) {
 		while (arrays.length > 0) {
 			current = arrays.shift();
 
-			if (current.className === "Array") {
-				for (i = 0, length = current.getValue("length").toNative(); i < length; i++) {
+			if (isSpreadable(current)) {
+				let length = yield toLength(env, current);
+				for (i = 0; i < length; i++) {
 					if (current.hasProperty(i)) {
 						newArray.defineOwnProperty(index, createIndexProperty(current.getValue(i)), true, env);
 					}
@@ -330,9 +346,9 @@ export default function arrayApi (env) {
 
 		index = getStartIndex(index, length);
 
-		for (let entry of iterate.forward(env, this.node, index, length)) {
-			if (searchElement.equals(entry.value || UNDEFINED)) {
-				return objectFactory.createPrimitive(entry.index);
+		for (let {key, value} of iterate.forward(env, this.node, index, length)) {
+			if (searchElement.equals(value || UNDEFINED)) {
+				return objectFactory.createPrimitive(key);
 			}
 		}
 
@@ -348,9 +364,9 @@ export default function arrayApi (env) {
 			index = length - Math.abs(index);
 		}
 
-		for (let entry of iterate.reverse(env, this.node, index)) {
-			if (searchElement.equals(entry.value || UNDEFINED)) {
-				return objectFactory.createPrimitive(entry.index);
+		for (let {key, value} of iterate.reverse(env, this.node, index)) {
+			if (searchElement.equals(value || UNDEFINED)) {
+				return objectFactory.createPrimitive(key);
 			}
 		}
 
@@ -378,7 +394,7 @@ export default function arrayApi (env) {
 
 		for (let entry of iterate.forward(env, arr, 0, length)) {
 			let value = yield executeCallback(env, callback, entry, thisArg, arr);
-			newArray.defineOwnProperty(entry.index, createIndexProperty(value), true, env);
+			newArray.defineOwnProperty(entry.key, createIndexProperty(value), true, env);
 		}
 
 		return newArray;

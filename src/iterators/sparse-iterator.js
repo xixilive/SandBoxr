@@ -52,11 +52,11 @@ export default class SparseIterator {
 		}
 
 		if (this.keys.length > 0) {
-			let index = this.position = this.keys.shift();
-			let value = this.props[index].getValue();
+			let key = this.position = this.keys.shift();
+			let value = this.props[key].getValue();
 
 			return {
-				value: { value, index },
+				value: { value, key },
 				done: false
 			};
 		}

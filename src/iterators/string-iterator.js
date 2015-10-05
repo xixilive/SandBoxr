@@ -6,9 +6,9 @@ function* ascIterator (factory, stringValue, start) {
 }
 
 function* descIterator (factory, stringValue, start) {
-	for (let index = start; index >= 0; index--) {
-		let value = factory.createPrimitive(stringValue[index]);
-		yield { value, index };
+	for (let key = start; key >= 0; key--) {
+		let value = factory.createPrimitive(stringValue[key]);
+		yield { value, key };
 	}
 }
 

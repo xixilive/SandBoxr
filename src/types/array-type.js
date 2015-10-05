@@ -64,9 +64,9 @@ function* setLength (env, arr, name, descriptor, throwOnError) {
 	let succeeded = true;
 
 	if (i > newLength.value) {
-		for (let entry of iterate.reverse(env, arr, i - 1, newLength.value)) {
-			if (!arr.deleteProperty(entry.index, false)) {
-				newLength = env.objectFactory.createPrimitive(entry.index + 1);
+		for (let {key} of iterate.reverse(env, arr, i - 1, newLength.value)) {
+			if (!arr.deleteProperty(key, false)) {
+				newLength = env.objectFactory.createPrimitive(key + 1);
 				arr.defineOwnProperty("length", { value: newLength}, false, env);
 				succeeded = false;
 				break;

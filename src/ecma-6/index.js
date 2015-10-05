@@ -1,50 +1,33 @@
 import ecma5 from "../ecma-5.1/";
-import {toInteger} from "../utils/native";
+import numberAPI from "./number/";
 import arrayAPI from "./array/";
 import symbolAPI from "./symbol/";
 import setAPI from "./set/";
 import mapAPI from "./map/";
 import reflectAPI from "./reflect/";
+import {SymbolType} from "../types/symbol-type";
 
 export default function (env) {
 	ecma5(env);
+	symbolAPI(env);
+
 	let objectFactory = env.objectFactory;
-
-	let numberClass = env.global.getValue("Number");
-
-	numberClass.define("isNaN", objectFactory.createBuiltInFunction(function (value) {
-		if (!value || value.className !== "Number") {
-			return objectFactory.createPrimitive(false);
-		}
-
-		return objectFactory.createPrimitive(isNaN(value.toNative()));
-	}, 1, "Number.isNaN"));
-
-	numberClass.define("isInteger", objectFactory.createBuiltInFunction(function* (value) {
-		if (!value || value.className !== "Number") {
-			return objectFactory.createPrimitive(false);
-		}
-
-		let nativeValue = value.toNative();
-		if (isNaN(nativeValue) || !isFinite(nativeValue)) {
-			return objectFactory.createPrimitive(false);
-		}
-
-		let intValue = yield toInteger(env, value);
-		return objectFactory.createPrimitive(nativeValue === intValue);
-	}, 1, "Number.isInteger"));
-
-	let numberProto = numberClass.getValue("prototype");
-	numberProto.className = "Object";
+	let globalObject = env.global;
 
 	let boolProto = env.global.getValue("Boolean").getValue("prototype");
 	boolProto.className = "Object";
 
+	numberAPI(env);
 	arrayAPI(env);
-	symbolAPI(env);
 	setAPI(env);
 	mapAPI(env);
-	
+
+	// setup class symbols
+	let stringTagKey = SymbolType.getByKey("toStringTag");
+	["Function", "Number", "Boolean", "Object", "Array", "String", "Date", "RegExp", "JSON"].forEach(typeName => {
+		globalObject.getValue(typeName).define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
+	});
+
 	let funcProto = env.global.getValue("Function").getValue("prototype");
 
 	let thrower = function () {

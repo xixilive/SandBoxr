@@ -111,10 +111,9 @@ function* createReplacer (env, replacer) {
 		if (replacer.className === "Function") {
 			return function* (holder, key, value) {
 				let args = [env.objectFactory.createPrimitive(key), value];
-				let params = replacer.native ? [] : replacer.node.params;
 				let callee = replacer.native ? replacer : replacer.node;
 
-				return yield exec(env, replacer, params, args, holder, callee);
+				return yield exec(env, replacer, args, holder, callee);
 			};
 		}
 
@@ -215,10 +214,9 @@ function createReviver (env, reviver) {
 	if (reviver && reviver.className === "Function") {
 		return function* (holder, key, value) {
 			let args = [env.objectFactory.createPrimitive(key), value];
-			let params = reviver.native ? [] : reviver.node.params;
 			let callee = reviver.native ? reviver : reviver.node;
 
-			return yield* exec(env, reviver, params, args, holder, callee);
+			return yield* exec(env, reviver, args, holder, callee);
 		};
 	}
 

@@ -1,6 +1,9 @@
 import {UNDEFINED} from "../types/primitive-type";
 
-export function* execute (env, fn, params, args, thisArg, callee, isNew) {
+export function* execute (env, fn, args, thisArg, callee, isNew) {
+	let f = fn.node || fn;
+	let params = f.params || [];
+
 	let scope = fn.createScope(env, thisArg, isNew);
 	let returnResult;
 
@@ -29,6 +32,12 @@ export function* execute (env, fn, params, args, thisArg, callee, isNew) {
 	});
 
 	return returnResult || UNDEFINED;
+}
+
+export function* construct (env, fn, args) {
+	let obj = env.objectFactory.createObject(fn);
+	let callee = fn.node || fn;
+	return yield execute(env, fn, args, obj, callee, true);
 }
 
 export function* call (env, fn, params, args, thisArg, callee) {

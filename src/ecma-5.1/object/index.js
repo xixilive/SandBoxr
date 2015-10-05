@@ -82,7 +82,7 @@ export function* defineProperty (env, obj, name, descriptor, throwOnError = true
 					let thisArg = setter.isStrict() ? this : toObject(env, this);
 
 					return yield scope.use(function* () {
-						yield exec(env, setter, setter.node.params, [value], thisArg, setter.node);
+						yield exec(env, setter, [value], thisArg, setter.node);
 						return UNDEFINED;
 					});
 				};

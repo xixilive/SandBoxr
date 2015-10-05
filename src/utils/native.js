@@ -141,6 +141,10 @@ export function* toNumber (env, obj) {
 		return NaN;
 	}
 
+	if (obj.isSymbol) {
+		throw new TypeError("Cannot convert Symbol to a number");
+	}
+	
 	return Number(yield toPrimitive(env, obj, "number"));
 }
 

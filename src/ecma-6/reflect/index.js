@@ -17,9 +17,7 @@ export default function (env) {
 
 		let args = yield toArray(env, argsArray);
 		let callee = target.native ? target : target.node;
-		let params = callee.params || [];
-
-		return yield exec(env, target, params, args, thisArg, callee);
+		return yield exec(env, target, args, thisArg, callee);
 	}, 3, "Reflect.apply"));
 
 	reflectClass.define("construct", objectFactory.createBuiltInFunction(function* (target, argsArray, newTarget) {
@@ -30,11 +28,10 @@ export default function (env) {
 
 		let args = yield toArray(env, argsArray);
 		let callee = target.node || target;
-		let params = callee.params || [];
 		let proto = newTarget || target;
 
 		let obj = objectFactory.createObject(proto);
-		return yield exec(env, target, params, args, obj, callee, true);
+		return yield exec(env, target, args, obj, callee, true);
 	}, 2, "Reflect.construct"));
 
 	reflectClass.define("defineProperty", objectFactory.createBuiltInFunction(function* (target, propertyKey, descriptor) {

@@ -1,22 +1,16 @@
 import {ObjectType} from "./object-type";
 
 export class IteratorType extends ObjectType {
-	constructor (source) {
+	constructor (iterable, kind = "key+value") {
 		super();
 
-		this.source = source;
+		this.iterable = iterable;
 		this.position = 0;
 		this.className = "Iterator";
+		this.kind = kind;
 	}
 
-	next () {
-		if (this.position >= this.source.length) {
-			return { done: true };
-		}
-
-		return {
-			value: this.source[this.position++],
-			done: false
-		};
+	advance () {
+		return this.iterable.next();
 	}
 }

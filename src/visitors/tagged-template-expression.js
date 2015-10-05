@@ -37,8 +37,6 @@ export default function* TaggedTemplateExpression (context) {
 
 	let callee = (yield context.create(context.node.tag).execute()).result;
 	let func = callee.getValue();
-	let params = func.node && func.node.params || [];
-
-	let value = yield exec(context.env, func, params, [templateObject, ...values], callee.base, callee);
+	let value = yield exec(context.env, func, [templateObject, ...values], callee.base, callee);
 	return context.result(value);
 }

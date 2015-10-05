@@ -3,6 +3,8 @@ import {executeCallback} from "../../ecma-5.1/array/";
 import {toLength,toObject,toBoolean,toInteger} from "../../utils/native";
 import iterate from "../../iterators/";
 import * as contracts from "../../utils/contracts";
+import {construct} from "../../utils/func";
+import arrayIterator from "./iterator";
 
 export default function (env) {
 	let objectFactory = env.objectFactory;
@@ -18,12 +20,18 @@ export default function (env) {
 	}
 
 	arrayClass.define("from", objectFactory.createBuiltInFunction(function* (items, mapFn, thisArg) {
-		// todo: if `this` isn't array need to call constructor
-		let length = yield toLength(env, items);
-		let arr = objectFactory.createArray();
-		let index = 0;
+		let arr;
 
-		for (let entry of iterate.forward(env, items, 0, length)) {
+		if (this.node.type === "function" && this.node.className !== "Array") {
+			arr = yield construct(env, this.node, []);
+		} else {
+			arr = objectFactory.createArray();
+		}
+
+		let index = 0;
+		let it = yield iterate.getIterator(env, arr);
+
+		for (let entry of it) {
 			let value = entry.value;
 			if (mapFn) {
 				value = yield executeCallback(env, mapFn, entry, thisArg, items);
@@ -34,6 +42,10 @@ export default function (env) {
 
 		return arr;
 	}, 1, "Array.from"));
+
+	arrayClass.define("of", objectFactory.createBuiltInFunction(function (...items) {
+		return objectFactory.createArray(items);
+	}, 0, "Array.of"));
 
 	proto.define("copyWithin", objectFactory.createBuiltInFunction(function* (target, start, end) {
 		let arr = toObject(env, this.node);
@@ -79,6 +91,8 @@ export default function (env) {
 		while (k < final) {
 			arr.putValue(k++, value, true, env);
 		}
+
+		return arr;
 	}, 1, "Array.prototype.fill"));
 
 	proto.define("find", objectFactory.createBuiltInFunction(function* (predicate, thisArg) {
@@ -102,10 +116,12 @@ export default function (env) {
 		for (let entry of iterate.forward(env, arr, 0, length)) {
 			let passed = toBoolean(yield executeCallback(env, predicate, entry, thisArg, arr));
 			if (passed) {
-				return objectFactory.createPrimitive(entry.index);
+				return objectFactory.createPrimitive(entry.key);
 			}
 		}
 
 		return objectFactory.createPrimitive(-1);
 	}, 1, "Array.prototype.findIndex"));
+
+	arrayIterator(env, proto);
 }
