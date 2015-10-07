@@ -144,9 +144,9 @@ export default function objectApi (env) {
 		return objectFactory.createObject();
 	}, proto, { configurable: false, enumerable: false, writable: false });
 
-	proto.define("hasOwnProperty", objectFactory.createBuiltInFunction(function* (name) {
-		name = yield toString(env, name);
-		return objectFactory.createPrimitive(name in this.node.properties);
+	proto.define("hasOwnProperty", objectFactory.createBuiltInFunction(function* (propertyKey) {
+		let key = yield toPropertyKey(env, propertyKey);
+		return objectFactory.createPrimitive(this.node.hasOwnProperty(key));
 	}, 1, "Object.prototype.hasOwnProperty"));
 
 	proto.define("valueOf", objectFactory.createBuiltInFunction(function () {

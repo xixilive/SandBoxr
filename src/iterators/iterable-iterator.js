@@ -1,27 +1,41 @@
 import {execute as exec} from "../utils/func";
 import {toBoolean} from "../utils/native";
-import * as contracts from "../utils/contracts";
+import {exhaust as x} from "../utils/async";
+import {UNDEFINED} from "../types/primitive-type";
 
-function* iterate (env, obj, iterator) {
-	let next = iterator.getValue("next");
-	contracts.assertIsFunction(next, "next");
+export default class IterableIterator {
+	constructor (env, it) {
+		this.env = env;
+		this.currentIndex = 0;
+		this.iterator = it;
+		this.advancer = it.getValue("next");
+	}
 
-	let callee = next.node || next;
-	let index = 0;
+	next () {
+		let result = x(exec(this.env, this.advancer, [], this.iterator, this.advancer));
+		let value = {key: this.currentIndex++, value: UNDEFINED};
 
-	while (true) {
-		let result = yield exec(env, next, [], obj, callee);
-		let done = toBoolean(result.getValue("done"));
-		if (done) {
-			break;
+		let valueProperty = result.getProperty("value");
+		if (valueProperty) {
+			value.value = valueProperty.getValue();
 		}
 
-		yield { value: result.getValue("value"), key: index++ };
+		let done = toBoolean(result.getValue("done"));
+		return {done, value};
+	}
+
+	["return"] () {
+		let propInfo = this.iterator.getProperty("return");
+		if (propInfo) {
+			let returnFunc = propInfo.getValue();
+			return x(exec(this.env, returnFunc, [], this.iterator, returnFunc));
+		}
+
+		return UNDEFINED;
+	}
+
+	static create (env, obj, it) {
+		return new IterableIterator(env, it);
 	}
 }
 
-export default {
-	create (env, obj, iterator) {
-		return iterate(env, obj, iterator);
-	}
-};

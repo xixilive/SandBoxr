@@ -2,14 +2,16 @@ import {UNDEFINED} from "../../types/primitive-type";
 import {executeCallback} from "../../ecma-5.1/array/";
 import {toLength,toObject,toBoolean,toInteger} from "../../utils/native";
 import iterate from "../../iterators/";
-import * as contracts from "../../utils/contracts";
-import {construct} from "../../utils/func";
+import {construct, execute as exec} from "../../utils/func";
 import arrayIterator from "./iterator";
+import * as contracts from "../../utils/contracts";
+import {SymbolType} from "../../types/symbol-type";
 
 export default function (env) {
 	let objectFactory = env.objectFactory;
 	let arrayClass = env.global.getValue("Array");
 	let proto = arrayClass.getValue("prototype");
+	let iteratorKey = SymbolType.getByKey("iterator");
 
 	function normalizeIndex (index, length) {
 		if (index < 0) {
@@ -19,32 +21,79 @@ export default function (env) {
 		return Math.min(index, length);
 	}
 
+	function* createArray (ctor, source) {
+		if (ctor === arrayClass || !contracts.isConstructor(ctor)) {
+			return objectFactory.createArray();
+		}
+
+		let args = [];
+		let hasIterator = source.hasProperty(iteratorKey);
+
+		if (!hasIterator) {
+			let length = yield toLength(env, source);
+			args.push(length);
+		}
+
+		return yield construct(env, ctor, args);
+	}
+
 	arrayClass.define("from", objectFactory.createBuiltInFunction(function* (items, mapFn, thisArg) {
-		let arr;
+		thisArg = thisArg || UNDEFINED;
 
-		if (this.node.type === "function" && this.node.className !== "Array") {
-			arr = yield construct(env, this.node, []);
+		let mapper;
+		if (contracts.isUndefined(mapFn)) {
+			mapper = function (v) { return v; };
 		} else {
-			arr = objectFactory.createArray();
+			contracts.assertIsFunction(mapFn, "mapFn");
+			mapper = function* (v, i) {
+				return yield exec(env, mapFn, [v, objectFactory.createPrimitive(i)], thisArg, mapFn);
+			};
 		}
 
+		let target = yield createArray(this.node, items);
+		let it = iterate.getIterator(env, items);
 		let index = 0;
-		let it = yield iterate.getIterator(env, arr);
+		let done = false;
 
-		for (let entry of it) {
-			let value = entry.value;
-			if (mapFn) {
-				value = yield executeCallback(env, mapFn, entry, thisArg, items);
+		while (!done) {
+			try {
+				let current;
+				({done, value: current} = it.next());
+
+				if (!done) {
+					let value = yield mapper(current.value || UNDEFINED, index);
+					target.putValue(index++, value, true, env);
+				}
+			} catch (err) {
+				if ("return" in it) {
+					it.return();
+				}
+
+				throw err;
 			}
-
-			arr.putValue(index++, value, true, env);
 		}
 
-		return arr;
+		target.putValue("length", objectFactory.createPrimitive(index), true, env);
+		return target;
 	}, 1, "Array.from"));
 
-	arrayClass.define("of", objectFactory.createBuiltInFunction(function (...items) {
-		return objectFactory.createArray(items);
+	arrayClass.define("of", objectFactory.createBuiltInFunction(function* (...items) {
+		if (this.node === arrayClass || !contracts.isConstructor(this.node)) {
+			return objectFactory.createArray(items);
+		}
+
+		let length = items.length;
+		let lengthValue = objectFactory.createPrimitive(length);
+		let arr = yield construct(env, this.node, [lengthValue]);
+		let i = 0;
+
+		while (i < length) {
+			arr.defineOwnProperty(i, {value: items[i], configurable: true, enumerable: true, writable: true}, true, env);
+			i++;
+		}
+
+		arr.putValue("length", lengthValue, true, env);
+		return arr;
 	}, 0, "Array.of"));
 
 	proto.define("copyWithin", objectFactory.createBuiltInFunction(function* (target, start, end) {
@@ -83,7 +132,7 @@ export default function (env) {
 		let arr = toObject(env, this.node);
 		let length = yield toLength(env, arr);
 		let k = start ? (yield toInteger(env, start)) : 0;
-		let final = end ? (yield toInteger(env, end)) : length;
+		let final = contracts.isUndefined(end) ? length : (yield toInteger(env, end));
 
 		k = normalizeIndex(k, length);
 		final = normalizeIndex(final, length);
@@ -98,12 +147,20 @@ export default function (env) {
 	proto.define("find", objectFactory.createBuiltInFunction(function* (predicate, thisArg) {
 		let arr = toObject(env, this.node);
 		let length = yield toLength(env, arr);
+		contracts.assertIsFunction(predicate, "predicate");
 
-		for (let entry of iterate.forward(env, arr, 0, length)) {
-			let passed = toBoolean(yield executeCallback(env, predicate, entry, thisArg, arr));
+		// for some reason the spec for the find methods calls empty array slots
+		// how that is useful, beats me
+		let i = 0;
+		while (i < length) {
+			let propInfo = arr.getProperty(i);
+			let value = propInfo ? propInfo.getValue() : UNDEFINED;
+			let passed = toBoolean(yield executeCallback(env, predicate, {key: i, value}, thisArg, arr));
 			if (passed) {
-				return entry.value;
+				return value;
 			}
+
+			i++;
 		}
 
 		return UNDEFINED;
@@ -112,12 +169,18 @@ export default function (env) {
 	proto.define("findIndex", objectFactory.createBuiltInFunction(function* (predicate, thisArg) {
 		let arr = toObject(env, this.node);
 		let length = yield toLength(env, arr);
+		contracts.assertIsFunction(predicate, "predicate");
 
-		for (let entry of iterate.forward(env, arr, 0, length)) {
-			let passed = toBoolean(yield executeCallback(env, predicate, entry, thisArg, arr));
+		let i = 0;
+		while (i < length) {
+			let propInfo = arr.getProperty(i);
+			let value = propInfo ? propInfo.getValue() : UNDEFINED;
+			let passed = toBoolean(yield executeCallback(env, predicate, {key: i, value}, thisArg, arr));
 			if (passed) {
-				return objectFactory.createPrimitive(entry.key);
+				return objectFactory.createPrimitive(i);
 			}
+
+			i++;
 		}
 
 		return objectFactory.createPrimitive(-1);

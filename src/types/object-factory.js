@@ -15,6 +15,7 @@ import {MapType} from "./map-type";
 import * as contracts from "../utils/contracts";
 
 let orphans = Object.create(null);
+const functionNameMatcher = /\.?(\w+)$/;
 
 function setOrphans (scope) {
 	for (let typeName in orphans) {
@@ -258,6 +259,14 @@ export class ObjectFactory {
 		return instance;
 	}
 
+	createGetter (func, key) {
+		return this.createBuiltInFunction(func, 0, `get ${key}`);
+	}
+
+	createSetter (func, key) {
+		return this.createBuiltInFunction(func, 1, `set ${key}`);
+	}
+
 	/**
 	 * Creates a function with no prototype that cannot be instantiated.
 	 * @param {Function} func - The underlying function.
@@ -278,12 +287,10 @@ export class ObjectFactory {
 		instance.builtIn = true;
 		instance.defineOwnProperty("length", { value: this.createPrimitive(length), configurable: true });
 
-		if (funcName && this.options.ecmaVersion > 5) {
-			let nameMatcher = /\.?(\w+)$/;
-			let name = nameMatcher.exec(funcName)[1];
+		let match = functionNameMatcher.exec(funcName);
+		let name = match && match[1] || funcName;
 
-			instance.defineOwnProperty("name", { value: this.createPrimitive(name), configurable: true }, true, this.env);
-		}
+		instance.defineOwnProperty("name", { value: this.createPrimitive(name), configurable: true }, true, this.env);
 
 		return instance;
 	}

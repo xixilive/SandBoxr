@@ -35,7 +35,11 @@ export function* executeCallback (env, callback, entry, thisArg, arr) {
 
 	return yield scope.use(function* () {
 		let executionResult = yield env.createExecutionContext(callback.node.body, callback.node).execute();
-		return executionResult ? executionResult.result : UNDEFINED;
+		if (executionResult && executionResult.exit) {
+			return executionResult.result || UNDEFINED;
+		}
+
+		return UNDEFINED;
 	});
 }
 
@@ -52,7 +56,11 @@ export default function arrayApi (env) {
 
 		return yield scope.use(function* () {
 			let executionResult = yield env.createExecutionContext(callback.node.body, callback.node).execute();
-			return executionResult ? executionResult.result : UNDEFINED;
+			if (executionResult && executionResult.exit) {
+				return executionResult.result || UNDEFINED;
+			}
+
+			return UNDEFINED;
 		});
 	}
 
@@ -275,7 +283,10 @@ export default function arrayApi (env) {
 		let key = SymbolType.getByKey("isConcatSpreadable");
 		let propInfo = obj.getProperty(key);
 		if (propInfo) {
-			return toBoolean(propInfo.getValue());
+			let spreadable = propInfo.getValue();
+			if (!contracts.isUndefined(spreadable)) {
+				return toBoolean(spreadable);
+			}
 		}
 
 		return obj.className === "Array";
@@ -287,7 +298,7 @@ export default function arrayApi (env) {
 		// add "this" array to bunch
 		arrays.unshift(toObject(env, this.node));
 
-		let current, index = 0, i, length;
+		let current, index = 0, i;
 		while (arrays.length > 0) {
 			current = arrays.shift();
 

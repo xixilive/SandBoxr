@@ -67,7 +67,12 @@ export function primitiveToObject (env, value) {
 	return newValue;
 }
 
-export function	toObject (env, obj) {
+export function	toObject (env, obj, throwOnError) {
+	// todo: is this ES6 only?
+	if (throwOnError && obj.isPrimitive && obj.value == null) {
+		throw new TypeError(`${obj.type} cannot be converted to an object`);
+	}
+
 	if (obj.isPrimitive && obj.value != null && obj.type !== "object") {
 		return primitiveToObject(env, obj.value);
 	}
@@ -144,7 +149,7 @@ export function* toNumber (env, obj) {
 	if (obj.isSymbol) {
 		throw new TypeError("Cannot convert Symbol to a number");
 	}
-	
+
 	return Number(yield toPrimitive(env, obj, "number"));
 }
 

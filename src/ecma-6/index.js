@@ -24,8 +24,14 @@ export default function (env) {
 
 	// setup class symbols
 	let stringTagKey = SymbolType.getByKey("toStringTag");
+	let speciesKey = SymbolType.getByKey("species");
 	["Function", "Number", "Boolean", "Object", "Array", "String", "Date", "RegExp", "JSON"].forEach(typeName => {
-		globalObject.getValue(typeName).define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
+		let ctor = globalObject.getValue(typeName);
+		ctor.define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
+
+		let speciesGetter = function () { return ctor; };
+		let speciesGetterFunc = objectFactory.createGetter(speciesGetter, "[Symbol.species]");
+		ctor.define(speciesKey, null, { getter: speciesGetter, get: speciesGetterFunc });
 	});
 
 	let funcProto = env.global.getValue("Function").getValue("prototype");

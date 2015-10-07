@@ -25,7 +25,7 @@ export function assertArgIsNotNullOrUndefined (obj) {
 }
 
 export function	assertIsFunction (obj, argName) {
-	if (!obj || obj.className !== "Function") {
+	if (!isFunction(obj)) {
 		throw new TypeError(`${argName} is not a function`);
 	}
 }
@@ -146,6 +146,22 @@ export function	isUndefined (obj) {
 
 export function	isNull (obj) {
 	return obj && obj.isPrimitive && obj.value === null;
+}
+
+export function isFunction (obj) {
+	return !!obj && obj.className === "Function";
+}
+
+export function isConstructor (obj) {
+	if (!isFunction(obj)) {
+		return false;
+	}
+
+	if (obj.arrow || obj.builtIn) {
+		return false;
+	}
+
+	return true;
 }
 
 export function	isInteger (value) {

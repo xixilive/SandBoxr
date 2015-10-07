@@ -1,7 +1,7 @@
 function* ascIterator (factory, stringValue, start) {
-	for (let index = start, length = stringValue.length; index < length; index++) {
-		let value = factory.createPrimitive(stringValue[index]);
-		yield { value, index };
+	for (let key = start, length = stringValue.length; key < length; key++) {
+		let value = factory.createPrimitive(stringValue[key]);
+		yield { value, key };
 	}
 }
 

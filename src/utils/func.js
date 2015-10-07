@@ -34,7 +34,7 @@ export function* execute (env, fn, args, thisArg, callee, isNew) {
 	return returnResult || UNDEFINED;
 }
 
-export function* construct (env, fn, args) {
+export function* construct (env, fn, args = []) {
 	let obj = env.objectFactory.createObject(fn);
 	let callee = fn.node || fn;
 	return yield execute(env, fn, args, obj, callee, true);

@@ -3,10 +3,9 @@ import SparseIterator from "./sparse-iterator";
 import ArrayIterator from "./array-iterator";
 import IterableIterator from "./iterable-iterator";
 import {SymbolType} from "../types/symbol-type";
-import {toLength,toBoolean} from "../utils/native";
+import {toLength} from "../utils/native";
 import {exhaust as x} from "../utils/async";
 import {execute as exec} from "../utils/func";
-import {UNDEFINED} from "../types/primitive-type";
 import "../polyfills";
 
 const SPARE_ARRAY_DENSITY = 0.8;
@@ -19,38 +18,17 @@ function arrayIsSparse (arr, length) {
 	return density < SPARE_ARRAY_DENSITY;
 }
 
-function* executeIterator (env, it) {
-	let done = false;
-	let next = it.getValue("next");
-
-	while (!done) {
-		let result = yield* exec(env, next, [], it, next);
-		let returnValue;
-
-		if (result.hasProperty("value")) {
-			let entry = result.getValue("value");
-			let key = entry.getValue(0);
-			let value = entry.getValue(1);
-
-			returnValue = {key, value};
-		}
-
-		done = toBoolean(result.getValue("done"));
-		yield {done, value: returnValue};
-	}
-}
-
 const iterate = {
-	*getIterator (env, obj) {
+	getIterator (env, obj) {
 		let iteratorKey = SymbolType.getByKey("iterator");
 		let iterator = obj.getProperty(iteratorKey);
 		if (iterator) {
 			let fn = iterator.getValue();
-			let it = yield exec(env, fn, [], obj, fn);
-			return executeIterator(env, it);
+			let it = x(exec(env, fn, [], obj, fn));
+			return IterableIterator.create(env, obj, it);
 		}
 
-		let length = yield toLength(env, obj);
+		let length = x(toLength(env, obj));
 		return this.forward(env, obj, 0, length);
 	},
 

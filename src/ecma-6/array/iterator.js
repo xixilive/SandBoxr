@@ -1,16 +1,23 @@
 import {UNDEFINED} from "../../types/primitive-type";
 import {SymbolType} from "../../types/symbol-type";
 import {exhaust as x} from "../../utils/async";
-import {toLength} from "../../utils/native";
+import {toLength,toObject} from "../../utils/native";
 
 export default function (env, proto) {
 	let objectFactory = env.objectFactory;
 
 	let iteratorProto = objectFactory.createObject();
 	iteratorProto.className = "Array Iterator";
-	
+
 	iteratorProto.define("next", objectFactory.createBuiltInFunction(function () {
-		return this.node.advance().value;
+		let result = this.node.advance();
+		if (result.value) {
+			return result.value;
+		}
+
+		let obj = objectFactory.createObject();
+		obj.define("done", objectFactory.createPrimitive(result.done));
+		return obj;
 	}, 0, "ArrayIterator.prototype.next"));
 
 	function createIteratorValue (arr, index, kind) {
@@ -59,27 +66,28 @@ export default function (env, proto) {
 		}
 	}
 
-	proto.define("values", objectFactory.createBuiltInFunction(function () {
-		let it = getIterator(this.node, "value");
-		return objectFactory.createIterator(it, iteratorProto);
-	}, 0, "Array.prototype.values"));
-
 	proto.define("keys", objectFactory.createBuiltInFunction(function () {
-		let it = getIterator(this.node, "key");
+		let arr = toObject(env, this.node, true);
+		let it = getIterator(arr, "key");
 		return objectFactory.createIterator(it, iteratorProto);
 	}, 0, "Array.prototype.keys"));
 
-	proto.define("entries", objectFactory.createBuiltInFunction(function* () {
-		let it = getIterator(this.node);
+	proto.define("entries", objectFactory.createBuiltInFunction(function () {
+		let arr = toObject(env, this.node, true);
+		let it = getIterator(arr);
 		return objectFactory.createIterator(it, iteratorProto);
 	}, 0, "Array.prototype.entries"));
 
 	let stringTagKey = SymbolType.getByKey("toStringTag");
 	iteratorProto.define(stringTagKey, objectFactory.createPrimitive("Array Iterator"), { writable: false });
 
-	let iteratorKey = SymbolType.getByKey("iterator");
-	proto.define(iteratorKey, objectFactory.createBuiltInFunction(function () {
-		let it = getIterator(this.node, "value");
+	let iteratorFunc = objectFactory.createBuiltInFunction(function () {
+		let arr = toObject(env, this.node, true);
+		let it = getIterator(arr, "value");
 		return objectFactory.createIterator(it, iteratorProto);
-	}, 0, "Array.prototype.entries"));
+	}, 0, "Array.prototype.values");
+
+	proto.define("values", iteratorFunc);
+	let iteratorKey = SymbolType.getByKey("iterator");
+	proto.define(iteratorKey, iteratorFunc);
 }
