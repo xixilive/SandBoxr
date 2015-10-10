@@ -52,7 +52,11 @@ export class ObjectType {
 		return this[getPropertySource(key)][String(key)];
 	}
 
-	getOwnPropertyNames () {
+	getOwnPropertyKeys (keyType = "String") {
+		if (keyType === "Symbol") {
+			return this.symbols.map(desc => desc.key);
+		}
+
 		return Object.keys(this.properties);
 	}
 

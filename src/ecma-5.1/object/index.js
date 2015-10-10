@@ -4,20 +4,8 @@ import {toString,toBoolean,toObject,toPropertyKey} from "../../utils/native";
 import * as contracts from "../../utils/contracts";
 import {execute as exec, call} from "../../utils/func";
 
-function isObject (obj) {
-	if (!obj) {
-		return false;
-	}
-
-	if (obj.isPrimitive) {
-		return obj.value && obj.type === "object";
-	}
-
-	return true;
-}
-
 export function* defineProperty (env, obj, name, descriptor, throwOnError = true) {
-	if (!isObject(descriptor)) {
+	if (!contracts.isObject(descriptor)) {
 		let stringValue = yield toString(env, descriptor);
 		throw new TypeError(`Property description must be an object: ${stringValue}`);
 	}
@@ -119,9 +107,22 @@ export function* getOwnPropertyDescriptor (env, target, propertyKey) {
 
 	return UNDEFINED;
 }
+
 export default function objectApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
+
+	function confirmObject (obj, methodName) {
+		if (contracts.isObject(obj)) {
+			return true;
+		}
+
+		if (env.options.ecmaVersion > 5) {
+			return false;
+		}
+
+		throw new TypeError(`${methodName} called on non-object`);
+	}
 
 	let proto = new ObjectType();
 	let objectClass = objectFactory.createFunction(function (value) {
@@ -229,7 +230,11 @@ export default function objectApi (env) {
 	}, 2, "Object.defineProperties"));
 
 	objectClass.define("getOwnPropertyDescriptor", objectFactory.createBuiltInFunction(function* (obj, key) {
-		contracts.assertIsObject(obj, "Object.getOwnPropertyDescriptor");
+		if (!confirmObject(obj, "Object.getOwnPropertyDescriptor")) {
+			obj = toObject(env, obj, true);
+		}
+
+		// contracts.assertIsObject(obj, "Object.getOwnPropertyDescriptor");
 		return yield getOwnPropertyDescriptor(env, obj, key);
 	}, 2, "Object.getOwnPropertyDescriptor"));
 
@@ -253,7 +258,7 @@ export default function objectApi (env) {
 		contracts.assertIsObject(obj, "Object.getOwnPropertyNames");
 
 		let arr = objectFactory.create("Array");
-		obj.getOwnPropertyNames().forEach(function (name, index) {
+		obj.getOwnPropertyKeys().forEach(function (name, index) {
 			arr.putValue(index, objectFactory.createPrimitive(name), true, env);
 		});
 
@@ -261,20 +266,26 @@ export default function objectApi (env) {
 	}, 1, "Object.getOwnPropertyNames"));
 
 	objectClass.define("getPrototypeOf", objectFactory.createBuiltInFunction(function (obj) {
-		contracts.assertIsObject(obj, "Object.getPrototypeOf");
+		if (!confirmObject(obj, "Object.getPrototypeOf")) {
+			obj = toObject(env, obj, true);
+		}
 
 		let objProto = obj.getPrototype();
 		return objProto || NULL;
 	}, 1, "Object.getPrototypeOf"));
 
 	objectClass.define("freeze", objectFactory.createBuiltInFunction(function (obj) {
-		contracts.assertIsObject(obj, "Object.freeze");
-		obj.freeze();
+		if (confirmObject(obj, "Object.freeze")) {
+			obj.freeze();
+		}
+
 		return obj;
 	}, 1, "Object.freeze"));
 
 	objectClass.define("isFrozen", objectFactory.createBuiltInFunction(function (obj) {
-		contracts.assertIsObject(obj, "Object.isFrozen");
+		if (!confirmObject(obj, "Object.isFrozen")) {
+			return objectFactory.createPrimitive(true);
+		}
 
 		if (obj.isPrimitive) {
 			return objectFactory.createPrimitive(true);
@@ -292,27 +303,34 @@ export default function objectApi (env) {
 	}, 1, "Object.isFrozen"));
 
 	objectClass.define("preventExtensions", objectFactory.createBuiltInFunction(function (obj) {
-		contracts.assertIsObject(obj, "Object.preventExtensions");
+		if (confirmObject(obj, "Object.preventExtensions")) {
+			obj.preventExtensions();
+		}
 
-		obj.preventExtensions();
 		return obj;
 	}, 1, "Object.preventExtensions"));
 
 	objectClass.define("isExtensible", objectFactory.createBuiltInFunction(function (obj) {
-		contracts.assertIsObject(obj, "Object.isExtensible");
+		if (!confirmObject(obj, "Object.isExtensible")) {
+			return objectFactory.createPrimitive(false);
+		}
 
 		return objectFactory.createPrimitive(obj.extensible);
 	}, 1, "Object.isExtensible"));
 
 	objectClass.define("seal", objectFactory.createBuiltInFunction(function (obj) {
-		contracts.assertIsObject(obj, "Object.seal");
+		if (confirmObject(obj, "Object.seal")) {
+			obj.seal();
+		}
 
 		obj.seal();
 		return obj;
 	}, 1, "Object.seal"));
 
 	objectClass.define("isSealed", objectFactory.createBuiltInFunction(function (obj) {
-		contracts.assertIsObject(obj, "Object.isSealed");
+		if (!confirmObject(obj, "Object.isSealed")) {
+			return objectFactory.createPrimitive(true);
+		}
 
 		if (!obj.extensible) {
 			for (let prop in obj.properties) {

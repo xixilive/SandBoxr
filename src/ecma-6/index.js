@@ -1,6 +1,7 @@
 import ecma5 from "../ecma-5.1/";
 import numberAPI from "./number/";
 import arrayAPI from "./array/";
+import objectAPI from "./object/";
 import symbolAPI from "./symbol/";
 import setAPI from "./set/";
 import mapAPI from "./map/";
@@ -17,6 +18,7 @@ export default function (env) {
 	let boolProto = env.global.getValue("Boolean").getValue("prototype");
 	boolProto.className = "Object";
 
+	objectAPI(env);
 	numberAPI(env);
 	arrayAPI(env);
 	setAPI(env);
