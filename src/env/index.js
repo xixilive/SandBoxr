@@ -51,47 +51,47 @@ export class Environment {
 
 	/**
 	 * Gets a reference from the environment
-	 * @param {String} name - The name of the property
+	 * @param {String} key - The key of the property
 	 * @returns {Reference} The reference.
 	 */
-	getReference (name) {
+	getReference (key) {
 		let scope = this.current && this.current.scope;
 		while (scope) {
-			if (scope.hasOwnProperty(name)) {
-				return scope.getReference(name, true);
+			if (scope.owns(key)) {
+				return scope.getReference(key, true);
 			}
 
 			scope = scope.parent;
 		}
 
-		return new Reference(name, undefined, this);
+		return new Reference(key, undefined, this);
 	}
 
-	getValue (name) {
-		return this.getReference(name).getValue();
+	getValue (key) {
+		return this.getReference(key).getValue();
 	}
 
-	putValue (name, value, strict) {
-		this.current.scope.putValue(name, value, strict);
+	putValue (key, value, strict) {
+		this.current.scope.putValue(key, value, strict);
 	}
 
-	hasProperty (name) {
-		return this.current.scope.hasProperty(name);
+	has (key) {
+		return this.current.scope.has(key);
 	}
 
-	deleteVariable (name) {
-		this.current.scope.deleteVariable(name);
+	deleteVariable (key) {
+		this.current.scope.deleteVariable(key);
 	}
 
 	/**
 	 * Declares a variable within the current scope.
-	 * @param {String} name - the name of the variable.
+	 * @param {String} key - the key of the variable.
 	 * @param {Boolean} [immutable] - whether the variable is immutable or not.
 	 * @returns {PropertyDescriptor} The property descriptor for the new variabble.
 	 */
-	createVariable (name, immutable) {
-		contracts.assertIsValidIdentifier(name, this.isStrict());
-		return this.current.scope.createVariable(name, !immutable);
+	createVariable (key, immutable) {
+		contracts.assertIsValidIdentifier(key, this.isStrict());
+		return this.current.scope.createVariable(key, !immutable);
 	}
 
 	/**

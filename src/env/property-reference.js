@@ -26,7 +26,7 @@ export class PropertyReference extends Reference {
 	 * @returns {Boolean} The result of the value assignment.
 	 */
 	setValue (value) {
-		if (this.base.hasProperty(this.key)) {
+		if (this.base.has(this.key)) {
 			this.base.putValue(this.key, value, this.strict, this.env);
 		} else {
 			this.base.defineOwnProperty(this.key, { value: value, configurable: true, enumerable: true, writable: true }, this.strict, this.env);

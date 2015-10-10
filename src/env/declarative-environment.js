@@ -14,39 +14,39 @@ export class DeclarativeEnvironment {
 		this.parent = parent.scope || parent;
 	}
 
-	getReference (name) {
-		let ref = new Reference(name, this, this.env);
+	getReference (key) {
+		let ref = new Reference(key, this, this.env);
 		ref.unqualified = true;
 		return ref;
 	}
 
-	hasProperty (name) {
-		return name in this.properties;
+	has (key) {
+		return key in this.properties;
 	}
 
-	hasOwnProperty (name) {
-		return this.hasProperty(name);
+	owns (key) {
+		return this.has(key);
 	}
 
-	deleteVariable (name) {
-		if (!this.hasProperty(name)) {
+	deleteVariable (key) {
+		if (!this.has(key)) {
 			return true;
 		}
 
-		if (!this.properties[name].configurable) {
+		if (!this.properties[key].configurable) {
 			return false;
 		}
 
-		delete this.properties[name];
+		delete this.properties[key];
 		return true;
 	}
 
-	createVariable (name) {
-		if (this.hasProperty(name)) {
-			return this.properties[name];
+	createVariable (key) {
+		if (this.has(key)) {
+			return this.properties[key];
 		}
 
-		return this.properties[name] = new PropertyDescriptor(this, {
+		return this.properties[key] = new PropertyDescriptor(this, {
 			value: undefined,
 			configurable: false,
 			enumerable: true,
@@ -54,33 +54,33 @@ export class DeclarativeEnvironment {
 		});
 	}
 
-	putValue (name, value, throwOnError) {
-		if (this.hasProperty(name)) {
-			if (!this.properties[name].writable) {
+	putValue (key, value, throwOnError) {
+		if (this.has(key)) {
+			if (!this.properties[key].writable) {
 				if (throwOnError) {
-					throw new TypeError(`Cannot write to immutable binding: ${name}`);
+					throw new TypeError(`Cannot write to immutable binding: ${key}`);
 				}
 
 				return;
 			}
 
-			this.properties[name].setValue(value);
+			this.properties[key].setValue(value);
 		} else {
 			this.parent.putValue(...arguments);
 		}
 	}
 
-	getValue (name, throwOnError) {
-		if (this.hasProperty(name)) {
-			if (!this.properties[name].value) {
+	getValue (key, throwOnError) {
+		if (this.has(key)) {
+			if (!this.properties[key].value) {
 				if (throwOnError) {
-					throw new ReferenceError(`${name} is not defined`);
+					throw new ReferenceError(`${key} is not defined`);
 				}
 
 				return undefined;
 			}
 
-			return this.properties[name].getValue();
+			return this.properties[key].getValue();
 		}
 	}
 

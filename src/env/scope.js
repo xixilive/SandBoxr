@@ -51,7 +51,7 @@ export class Scope {
 				let strictFunc = strict || contracts.isStrictNode(decl.body.body);
 				value = env.objectFactory.createFunction(decl, undefined, { strict: strictFunc });
 				value.bindScope(this);
-			} else if (this.scope.hasProperty(name)) {
+			} else if (this.scope.has(name)) {
 				return;
 			}
 
@@ -143,7 +143,7 @@ export class Scope {
 				let value = args[i] || UNDEFINED;
 				let name = param.name;
 
-				if (shouldMap && !scope.hasProperty(name)) {
+				if (shouldMap && !scope.has(name)) {
 					let descriptor = scope.createVariable(name);
 					if (argsLength > i) {
 						argumentList.mapProperty(i, descriptor);

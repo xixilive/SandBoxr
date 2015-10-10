@@ -1,7 +1,9 @@
 import {UNDEFINED} from "../../types/primitive-type";
-import {toObject,toPropertyKey} from "../../utils/native";
+import {toObject} from "../../utils/native";
 import * as contracts from "../../utils/contracts";
-import {getOwnPropertyDescriptor} from "../../ecma-5.1/object/";
+import {setPrototype} from "../reflect/";
+import {SymbolType} from "../../types/symbol-type";
+
 export default function (env) {
 	let objectFactory = env.objectFactory;
 	let objectClass = env.global.getValue("Object");
@@ -54,13 +56,38 @@ export default function (env) {
 		return objectFactory.createArray(keys);
 	}, 1, "Object.keys"));
 
-	// objectClass.define("getPrototypeOf", objectFactory.createBuiltInFunction(function (obj) {
-	// 	let o = toObject(env, obj, true);
-	// 	return o.getPrototype();
-	// }, 1, "Object.getPrototypeOf"));
+	objectClass.define("setPrototypeOf", objectFactory.createBuiltInFunction(function (target, proto) {
+		contracts.assertIsNotNullOrUndefined(target, "setPrototypeOf");
+		if (!contracts.isObject(proto) && !contracts.isNull(proto)) {
+			throw new TypeError("Object prototype may only be an Object or null");
+		}
 
-	// objectClass.define("getOwnPropertyDescriptor", objectFactory.createBuiltInFunction(function* (obj, key) {
-	// 	let o = toObject(env, obj, true);
-	// 	return yield getOwnPropertyDescriptor(env, o, key);
-	// }, 2, "Object.getOwnPropertyDescriptor"));
+		if (contracts.isObject(target)) {
+			setPrototype(target, proto);
+		}
+
+		return target;
+	}, 2, "Object.setPrototypeOf"));
+
+	let proto = objectClass.getValue("prototype");
+	let stringTagKey = SymbolType.getByKey("toStringTag");
+	let toStringFunc = objectFactory.createBuiltInFunction(function () {
+		if (this.node.className !== "Object") {
+			return objectFactory.createPrimitive(`[object ${this.node.className}]`);
+		}
+
+		let tag = this.node.className;
+		let tagProperty = this.node.getProperty(stringTagKey);
+		if (tagProperty) {
+			let tagValue = tagProperty.getValue();
+			if (tagValue && tagValue.type === "string") {
+				tag = tagValue.toNative();
+			}
+		}
+
+		return objectFactory.createPrimitive(`[object ${tag}]`);
+	}, 0, "Object.prototype.toString");
+
+	proto.define("toString", toStringFunc);
+	proto.define("toLocaleString", toStringFunc);
 }

@@ -27,7 +27,7 @@ export default function (env) {
 		}
 
 		let args = [];
-		let hasIterator = source.hasProperty(iteratorKey);
+		let hasIterator = source.has(iteratorKey);
 
 		if (!hasIterator) {
 			let length = yield toLength(env, source);

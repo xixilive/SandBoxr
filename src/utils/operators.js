@@ -1,4 +1,4 @@
-import {toPrimitive,toNumber,toInt32,toString} from "./native";
+import {toPrimitive,toNumber,toInt32,toString,toPropertyKey} from "./native";
 
 function neg (value) {
 	if (value === undefined) {
@@ -169,13 +169,13 @@ const ops = {
 	*[">="] (a, b) { return neg(yield this.relationalCompare(a, b, true)); },
 
 	*["in"] (a, b) {
-		a = yield toString(this.env, a);
+		a = yield toPropertyKey(this.env, a);
 		if (b.isPrimitive) {
 			let bString = yield toString(this.env, b);
 			throw new TypeError(`Cannot use 'in' operator to search for '${a}' in ${bString}`);
 		}
 
-		return b.hasProperty(a);
+		return b.has(a);
 	},
 
 	["instanceof"] (a, b) {

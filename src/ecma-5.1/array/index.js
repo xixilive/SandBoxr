@@ -118,7 +118,7 @@ export default function arrayApi (env) {
 		if (i > 0) {
 			i--;
 
-			if (this.node.hasProperty(i)) {
+			if (this.node.has(i)) {
 				obj = this.node.getValue(i);
 				this.node.deleteProperty(i, true);
 			}
@@ -134,13 +134,13 @@ export default function arrayApi (env) {
 		let i = 0;
 
 		if (length > 0) {
-			if (this.node.hasProperty(i)) {
+			if (this.node.has(i)) {
 				obj = this.node.getValue(i);
 				this.node.deleteProperty(i);
 			}
 
 			while (++i < length) {
-				if (this.node.hasProperty(i)) {
+				if (this.node.has(i)) {
 					this.node.putValue(i - 1, this.node.getValue(i), true, env);
 				} else {
 					this.node.deleteProperty(i);
@@ -164,7 +164,7 @@ export default function arrayApi (env) {
 			fromIndex = i - 1;
 			toIndex = i + argCount - 1;
 
-			if (this.node.hasProperty(fromIndex)) {
+			if (this.node.has(fromIndex)) {
 				this.node.putValue(toIndex, this.node.getValue(fromIndex), true, env);
 			} else {
 				this.node.deleteProperty(toIndex, true);
@@ -227,7 +227,7 @@ export default function arrayApi (env) {
 
 		let k = 0;
 		while (k < deleteCount) {
-			if (this.node.hasProperty(k + start)) {
+			if (this.node.has(k + start)) {
 				removed.defineOwnProperty(k, createIndexProperty(this.node.getValue(k + start)), true, env);
 			}
 
@@ -239,7 +239,7 @@ export default function arrayApi (env) {
 			k = start;
 
 			while (k < length - deleteCount) {
-				if (this.node.hasProperty(k + deleteCount)) {
+				if (this.node.has(k + deleteCount)) {
 					this.node.putValue(k + newCount, this.node.getValue(k + deleteCount));
 				} else {
 					this.node.deleteProperty(k + deleteCount);
@@ -255,7 +255,7 @@ export default function arrayApi (env) {
 		} else if (newCount > deleteCount) {
 			k = length - start;
 			while (k > start) {
-				if (this.node.hasProperty(k + deleteCount - 1)) {
+				if (this.node.has(k + deleteCount - 1)) {
 					this.node.putValue(k + newCount - 1, this.node.getValue(k + deleteCount - 1), true, env);
 				} else {
 					this.node.deleteProperty(k + newCount - 1);
@@ -305,7 +305,7 @@ export default function arrayApi (env) {
 			if (isSpreadable(current)) {
 				let length = yield toLength(env, current);
 				for (i = 0; i < length; i++) {
-					if (current.hasProperty(i)) {
+					if (current.has(i)) {
 						newArray.defineOwnProperty(index, createIndexProperty(current.getValue(i)), true, env);
 					}
 
@@ -328,7 +328,7 @@ export default function arrayApi (env) {
 
 		for (let i = 0; i < length; i++) {
 			stringValue = "";
-			if (this.node.hasProperty(i)) {
+			if (this.node.has(i)) {
 				stringValue = this.node.getValue(i);
 				if (contracts.isNullOrUndefined(stringValue)) {
 					stringValue = "";
@@ -544,8 +544,8 @@ export default function arrayApi (env) {
 
 		while (lower !== middle) {
 			upper = length - lower - 1;
-			lowerValue = this.node.hasProperty(lower) && this.node.getValue(lower);
-			upperValue = this.node.hasProperty(upper) && this.node.getValue(upper);
+			lowerValue = this.node.has(lower) && this.node.getValue(lower);
+			upperValue = this.node.has(upper) && this.node.getValue(upper);
 
 			if (upperValue) {
 				this.node.putValue(lower, upperValue, true, env);
@@ -633,7 +633,7 @@ export default function arrayApi (env) {
 		let current;
 
 		while (i < length) {
-			if (this.node.hasProperty(i)) {
+			if (this.node.has(i)) {
 				current = this.node.getValue(i);
 
 				if (contracts.isNullOrUndefined(current)) {

@@ -25,7 +25,7 @@ export default function errorApi (env) {
 		let name = this.node.getValue("name");
 		let msg;
 
-		if (this.node.hasProperty("message")) {
+		if (this.node.has("message")) {
 			msg = yield toString(env, this.node.getValue("message"));
 		}
 

@@ -116,7 +116,7 @@ export function* toArray (env, obj, length) {
 
 		let i = 0;
 		while (i < length) {
-			if (obj.hasProperty(i)) {
+			if (obj.has(i)) {
 				arr[i] = obj.getValue(i);
 			}
 

@@ -13,16 +13,16 @@ export function* defineProperty (env, obj, name, descriptor, throwOnError = true
 	let options = {};
 
 	if (descriptor) {
-		let hasValue = descriptor.hasProperty("value");
-		let hasGetter = descriptor.hasProperty("get");
-		let hasSetter = descriptor.hasProperty("set");
+		let hasValue = descriptor.has("value");
+		let hasGetter = descriptor.has("get");
+		let hasSetter = descriptor.has("set");
 
-		if ((hasValue || descriptor.hasProperty("writable")) && (hasGetter || hasSetter)) {
+		if ((hasValue || descriptor.has("writable")) && (hasGetter || hasSetter)) {
 			throw new TypeError("Invalid property. A property cannot both have accessors and be writable or have a value");
 		}
 
 		["writable", "enumerable", "configurable"].forEach(function (prop) {
-			if (descriptor.hasProperty(prop)) {
+			if (descriptor.has(prop)) {
 				let attrValue = descriptor.getValue(prop);
 				options[prop] = toBoolean(attrValue);
 			}
@@ -88,7 +88,7 @@ export function* defineProperty (env, obj, name, descriptor, throwOnError = true
 export function* getOwnPropertyDescriptor (env, target, propertyKey) {
 	let key = yield toPropertyKey(env, propertyKey);
 
-	if (target.hasOwnProperty(key)) {
+	if (target.owns(key)) {
 		let descriptor = target.getProperty(key);
 
 		let result = env.objectFactory.createObject();
@@ -146,12 +146,13 @@ export default function objectApi (env) {
 	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	proto.define("hasOwnProperty", objectFactory.createBuiltInFunction(function* (propertyKey) {
+		let o = toObject(env, this.node, true);
 		let key = yield toPropertyKey(env, propertyKey);
-		return objectFactory.createPrimitive(this.node.hasOwnProperty(key));
+		return objectFactory.createPrimitive(o.owns(key));
 	}, 1, "Object.prototype.hasOwnProperty"));
 
 	proto.define("valueOf", objectFactory.createBuiltInFunction(function () {
-		return toObject(env, this.node);
+		return toObject(env, this.node, true);
 	}, 0, "Object.prototype.valueOf"));
 
 	let toStringFunc = objectFactory.createBuiltInFunction(function () {
@@ -164,9 +165,14 @@ export default function objectApi (env) {
 	proto.define("toLocaleString", toStringFunc);
 
 	proto.define("isPrototypeOf", objectFactory.createBuiltInFunction(function (obj) {
+		let thisArg = this.node;
+		if (!confirmObject(thisArg, "Object.isPrototypeOf")) {
+			thisArg = toObject(env, thisArg, true);
+		}
+
 		let current = obj;
 		while (current) {
-			if (this.node === current) {
+			if (thisArg === current) {
 				return objectFactory.createPrimitive(true);
 			}
 
@@ -176,9 +182,14 @@ export default function objectApi (env) {
 		return objectFactory.createPrimitive(false);
 	}, 1, "Object.isPrototypeOf"));
 
-	proto.define("propertyIsEnumerable", objectFactory.createBuiltInFunction(function* (name) {
-		name = yield toString(env, name);
-		let descriptor = this.node.getOwnProperty(name);
+	proto.define("propertyIsEnumerable", objectFactory.createBuiltInFunction(function* (key) {
+		let thisArg = this.node;
+		if (!confirmObject(thisArg, "Object.propertyIsEnumerable")) {
+			thisArg = toObject(env, thisArg, true);
+		}
+		
+		let k = yield toPropertyKey(env, key);
+		let descriptor = thisArg.getOwnProperty(k);
 		return objectFactory.createPrimitive(!!(descriptor && descriptor.enumerable));
 	}, 1, "Object.propertyIsEnumerable"));
 

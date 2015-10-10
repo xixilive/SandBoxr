@@ -60,11 +60,11 @@ export class ObjectType {
 		return Object.keys(this.properties);
 	}
 
-	hasProperty (key) {
+	has (key) {
 		return !!this.getProperty(key);
 	}
 
-	hasOwnProperty (key) {
+	owns (key) {
 		return String(key) in this[getPropertySource(key)];
 	}
 
@@ -83,7 +83,7 @@ export class ObjectType {
 				return;
 			}
 
-			if (descriptor.dataProperty && !this.hasOwnProperty(key)) {
+			if (descriptor.dataProperty && !this.owns(key)) {
 				this[getPropertySource(key)][String(key)] = new PropertyDescriptor(this, {
 					value: value,
 					configurable: descriptor.configurable,

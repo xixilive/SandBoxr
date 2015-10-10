@@ -4,6 +4,30 @@ import * as contracts from "../../utils/contracts";
 import {NULL,UNDEFINED} from "../../types/primitive-type";
 import {defineProperty,getOwnPropertyDescriptor} from "../../ecma-5.1/object/";
 
+export function setPrototype (target, proto) {
+	// check whether prototype chain already includes object
+	let targetProto = target.getPrototype();
+	if (targetProto === proto) {
+		return true;
+	}
+
+	if (!target.extensible) {
+		return false;
+	}
+
+	let current = proto;
+	while (current) {
+		if (current === target) {
+			return false;
+		}
+
+		current = current.getPrototype();
+	}
+
+	target.setPrototype(proto);
+	return true;
+}
+
 export default function (env) {
 	let objectFactory = env.objectFactory;
 	let globalObject = env.global;
@@ -72,7 +96,7 @@ export default function (env) {
 	reflectClass.define("has", objectFactory.createBuiltInFunction(function* (target, propertyKey) {
 		contracts.assertIsObject(target, "Reflect.has");
 		let key = yield toPropertyKey(env, propertyKey);
-		return objectFactory.createPrimitive(target.hasProperty(key));
+		return objectFactory.createPrimitive(target.has(key));
 	}, 2, "Reflect.has"));
 
 	reflectClass.define("isExtensible", objectFactory.createBuiltInFunction(function (target) {
@@ -111,7 +135,7 @@ export default function (env) {
 
 		let descriptor = target.getProperty(key);
 		if (descriptor) {
-			if (target !== receiver && receiver.hasOwnProperty(key)) {
+			if (target !== receiver && receiver.owns(key)) {
 				let receiverDescriptor = receiver.getProperty(key);
 				if (!receiverDescriptor.dataProperty) {
 					return objectFactory.createPrimitive(false);
@@ -124,7 +148,7 @@ export default function (env) {
 				return objectFactory.createPrimitive(true);
 			}
 
-			if (!receiver.hasOwnProperty(key)) {
+			if (!receiver.owns(key)) {
 				return objectFactory.createPrimitive(receiver.defineOwnProperty(key, {
 					value: value,
 					configurable: true,
@@ -157,27 +181,7 @@ export default function (env) {
 			throw new TypeError("The prototype must be an object or null");
 		}
 
-		// check whether prototype chain already includes object
-		let targetProto = target.getPrototype();
-		if (targetProto === proto) {
-			return objectFactory.createPrimitive(true);
-		}
-
-		if (!target.extensible) {
-			return objectFactory.createPrimitive(false);
-		}
-
-		let current = proto;
-		while (current) {
-			if (current === target) {
-				return objectFactory.createPrimitive(false);
-			}
-
-			current = current.getPrototype();
-		}
-
-		target.setPrototype(proto);
-		return objectFactory.createPrimitive(true);
+		return objectFactory.createPrimitive(setPrototype(target, proto));
 	}, 2, "Reflect.setPrototypeOf"));
 
 	globalObject.define("Reflect", reflectClass);

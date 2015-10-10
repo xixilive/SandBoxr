@@ -9,61 +9,61 @@ export class ObjectEnvironment {
 		this.env = env;
 	}
 
-	getReference (name, unqualified) {
-		let ref = new PropertyReference(name, this.object, this.env);
+	getReference (key, unqualified) {
+		let ref = new PropertyReference(key, this.object, this.env);
 		ref.unqualified = unqualified;
 		return ref;
 	}
 
-	hasProperty (name) {
-		return this.parent ? this.parent.hasProperty(name) : this.hasOwnProperty(name);
+	has (key) {
+		return this.parent ? this.parent.has(key) : this.owns(key);
 	}
 
-	hasOwnProperty (name) {
-		return this.object.hasProperty(name);
+	owns (key) {
+		return this.object.has(key);
 	}
 
-	getVariable (name) {
-		return this.object.getProperty(name);
+	getVariable (key) {
+		return this.object.getProperty(key);
 	}
 
-	deleteVariable (name) {
-		return this.object.deleteProperty(name, false);
+	deleteVariable (key) {
+		return this.object.deleteProperty(key, false);
 	}
 
-	createVariable (name, immutable) {
+	createVariable (key, immutable) {
 		if (this.parent) {
 			return this.parent.createVariable(...arguments);
 		} else {
-			this.object.defineOwnProperty(name, {
+			this.object.defineOwnProperty(key, {
 				value: undefined,
 				configurable: immutable,
 				enumerable: true,
 				writable: true
 			}, this.env.isStrict());
 
-			return this.object.getProperty(name);
+			return this.object.getProperty(key);
 		}
 	}
 
-	putValue (name, value, throwOnError) {
-		if (this.parent && !this.object.hasProperty(name)) {
+	putValue (key, value, throwOnError) {
+		if (this.parent && !this.object.has(key)) {
 			this.parent.putValue(...arguments);
 		} else {
-			this.object.putValue(name, value, throwOnError);
+			this.object.putValue(key, value, throwOnError);
 		}
 	}
 
-	getValue (name, throwOnError) {
-		if (!this.hasOwnProperty(name)) {
+	getValue (key, throwOnError) {
+		if (!this.owns(key)) {
 			if (throwOnError) {
-				throw new ReferenceError(`${name} is not defined.`);
+				throw new ReferenceError(`${key} is not defined.`);
 			}
 
 			return undefined;
 		}
 
-		return this.object.getValue(name);
+		return this.object.getValue(key);
 	}
 
 	getThisBinding () {

@@ -36,6 +36,17 @@ export default function (env) {
 		ctor.define(speciesKey, null, { getter: speciesGetter, get: speciesGetterFunc });
 	});
 
+	// update length attributes on built-ins
+	let lengthAttr = { configurable: true, enumerable: false, writable: false };
+	globalObject.getValue("Function").define("length", objectFactory.createPrimitive(1), lengthAttr);
+	globalObject.getValue("Number").define("length", objectFactory.createPrimitive(1), lengthAttr);
+	globalObject.getValue("Boolean").define("length", objectFactory.createPrimitive(1), lengthAttr);
+	globalObject.getValue("Object").define("length", objectFactory.createPrimitive(1), lengthAttr);
+	globalObject.getValue("Array").define("length", objectFactory.createPrimitive(1), lengthAttr);
+	globalObject.getValue("String").define("length", objectFactory.createPrimitive(1), lengthAttr);
+	globalObject.getValue("Date").define("length", objectFactory.createPrimitive(7), lengthAttr);
+	globalObject.getValue("RegExp").define("length", objectFactory.createPrimitive(2), lengthAttr);
+	
 	let funcProto = env.global.getValue("Function").getValue("prototype");
 
 	let thrower = function () {

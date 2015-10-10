@@ -54,7 +54,7 @@ function* serializeArray (env, stack, arr, replacer, gap, depth) {
 
 	for (let i = 0; i < length; i++) {
 		let value = undefined;
-		if (arr.hasProperty(i)) {
+		if (arr.has(i)) {
 			value = yield replacer(arr, String(i), arr.getValue(i));
 		}
 
