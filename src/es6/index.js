@@ -34,6 +34,13 @@ export default function (env) {
 		let speciesGetter = function () { return ctor; };
 		let speciesGetterFunc = objectFactory.createGetter(speciesGetter, "[Symbol.species]");
 		ctor.define(speciesKey, null, { getter: speciesGetter, get: speciesGetterFunc });
+
+		if (ctor.owns("prototype")) {
+			let proto = ctor.getValue("prototype");
+
+			// prototypes in ES6 can't be coerced into primitives
+			proto.className = "Object";
+		}
 	});
 
 	// update length attributes on built-ins

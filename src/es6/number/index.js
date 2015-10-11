@@ -81,8 +81,4 @@ export default function (env) {
 	numberClass.define("EPSILON", objectFactory.createPrimitive(Number.EPSILON || 2.220446049250313e-16), frozen);
 	numberClass.define("MAX_SAFE_INTEGER", objectFactory.createPrimitive(MAX_SAFE_INTEGER), frozen);
 	numberClass.define("MIN_SAFE_INTEGER", objectFactory.createPrimitive(MIN_SAFE_INTEGER), frozen);
-
-	// prototypes in ES6 cannot be coerced into primitives
-	let proto = numberClass.getValue("prototype");
-	proto.className = "Object";
 }

@@ -69,8 +69,8 @@ const ops = {
 			return a.value == b.value;
 		}
 
-		if ((a.type === "object" && b.type === "object") || (a.type === "function" && b.type === "function")) {
-			return a === b;
+		if (a.type === b.type) {
+			return this.strictEquals(a, b);
 		}
 
 		let primitiveA = yield toPrimitive(this.env, a);

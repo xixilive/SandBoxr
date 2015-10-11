@@ -1,6 +1,7 @@
 import {toString} from "../../utils/native";
 import {SymbolType} from "../../types/symbol-type";
 import {UNDEFINED} from "../../types/primitive-type";
+import * as contracts from "../../utils/contracts";
 
 export default function (env) {
 	let frozen = { configurable: false, enumerable: false, writable: false };
@@ -17,7 +18,7 @@ export default function (env) {
 
 	symbolClass.define("for", objectFactory.createBuiltInFunction(function* (key) {
 		let keyString = yield toString(env, key);
-		
+
 		let instance = SymbolType.getByKey(keyString);
 		if (instance) {
 			return instance;
@@ -34,7 +35,12 @@ export default function (env) {
 	proto.define("toString", objectFactory.createBuiltInFunction(function () {
 		let stringValue = `Symbol(${this.node.description})`;
 		return objectFactory.createPrimitive(stringValue);
-	}));
+	}, 0, "Symbol.prototype.toString"));
+
+	proto.define("valueOf", objectFactory.createBuiltInFunction(function () {
+		contracts.assertIsNotGeneric(this.node, "Symbol", "Symbol.prototype.valueOf");
+		return this.node;
+	}, 0, "Symbol.prototype.valueOf"));
 
 	function createKnownSymbol (key) {
 		let sym = objectFactory.create("Symbol", "@@" + key);

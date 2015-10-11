@@ -73,10 +73,6 @@ export function	toObject (env, obj, throwOnError) {
 		throw new TypeError(`${obj.type} cannot be converted to an object`);
 	}
 
-	if (obj.isSymbol) {
-		return env.objectFactory.create("Symbol", obj.description);
-	}
-
 	if (obj.isPrimitive && obj.value != null && obj.type !== "object") {
 		return primitiveToObject(env, obj.value);
 	}

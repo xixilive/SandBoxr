@@ -15,12 +15,18 @@ export class SymbolType extends ObjectType {
 		this.isSymbol = true;
 	}
 
-	defineOwnProperty (name, descriptor, throwOnError) {
+	defineOwnProperty (key, descriptor, throwOnError) {
 		if (throwOnError) {
-			throw new TypeError(`Cannot assign to read only property '${name}' of ${this.toNative()}`);
+			throw new TypeError(`Cannot assign to read only property '${key}' of ${this.toNative()}`);
 		}
 
 		return false;
+	}
+	
+	putValue (key, value, throwOnError) {
+		if (throwOnError) {
+			throw new TypeError(`Cannot assign to read only property '${key}' of ${this.toNative()}`);
+		}
 	}
 
 	toNative () {

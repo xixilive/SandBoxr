@@ -52,8 +52,13 @@ gulp.task("test262-6", function () {
 	// built-ins
 	//	- object -41
 	//	- number -1
-	
-	return streamer6({ files: ["/built-ins/number/**/*.js"] })
+	//	- boolean +
+	//	- array -21
+	//	- date -8
+	//	- undefined +
+	//	- symbol -2
+
+	return streamer6({ files: ["/built-ins/string/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 
