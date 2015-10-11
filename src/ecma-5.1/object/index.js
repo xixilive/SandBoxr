@@ -145,10 +145,10 @@ export default function objectApi (env) {
 		return objectFactory.createObject();
 	}, proto, { configurable: false, enumerable: false, writable: false });
 
-	proto.define("hasOwnProperty", objectFactory.createBuiltInFunction(function* (propertyKey) {
-		let o = toObject(env, this.node, true);
-		let key = yield toPropertyKey(env, propertyKey);
-		return objectFactory.createPrimitive(o.owns(key));
+	proto.define("hasOwnProperty", objectFactory.createBuiltInFunction(function* (key) {
+		contracts.assertIsNotNullOrUndefined(this.node, "Object.prototype.hasOwnProperty");
+		let k = yield toPropertyKey(env, key);
+		return objectFactory.createPrimitive(this.node.owns(k));
 	}, 1, "Object.prototype.hasOwnProperty"));
 
 	proto.define("valueOf", objectFactory.createBuiltInFunction(function () {
@@ -165,14 +165,11 @@ export default function objectApi (env) {
 	proto.define("toLocaleString", toStringFunc);
 
 	proto.define("isPrototypeOf", objectFactory.createBuiltInFunction(function (obj) {
-		let thisArg = this.node;
-		if (!confirmObject(thisArg, "Object.isPrototypeOf")) {
-			thisArg = toObject(env, thisArg, true);
-		}
+		contracts.assertIsNotNullOrUndefined(this.node, "Object.isPrototypeOf");
 
 		let current = obj;
 		while (current) {
-			if (thisArg === current) {
+			if (this.node === current) {
 				return objectFactory.createPrimitive(true);
 			}
 
@@ -183,13 +180,10 @@ export default function objectApi (env) {
 	}, 1, "Object.isPrototypeOf"));
 
 	proto.define("propertyIsEnumerable", objectFactory.createBuiltInFunction(function* (key) {
-		let thisArg = this.node;
-		if (!confirmObject(thisArg, "Object.propertyIsEnumerable")) {
-			thisArg = toObject(env, thisArg, true);
-		}
-		
+		contracts.assertIsNotNullOrUndefined(this.node,  "Object.propertyIsEnumerable");
+
 		let k = yield toPropertyKey(env, key);
-		let descriptor = thisArg.getOwnProperty(k);
+		let descriptor = this.node.getOwnProperty(k);
 		return objectFactory.createPrimitive(!!(descriptor && descriptor.enumerable));
 	}, 1, "Object.propertyIsEnumerable"));
 
@@ -241,12 +235,9 @@ export default function objectApi (env) {
 	}, 2, "Object.defineProperties"));
 
 	objectClass.define("getOwnPropertyDescriptor", objectFactory.createBuiltInFunction(function* (obj, key) {
-		if (!confirmObject(obj, "Object.getOwnPropertyDescriptor")) {
-			obj = toObject(env, obj, true);
+		if (confirmObject(obj, "Object.getOwnPropertyDescriptor")) {
+			return yield getOwnPropertyDescriptor(env, obj, key);
 		}
-
-		// contracts.assertIsObject(obj, "Object.getOwnPropertyDescriptor");
-		return yield getOwnPropertyDescriptor(env, obj, key);
 	}, 2, "Object.getOwnPropertyDescriptor"));
 
 	objectClass.define("keys", objectFactory.createBuiltInFunction(function (obj) {

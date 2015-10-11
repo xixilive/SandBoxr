@@ -62,8 +62,8 @@ export default function (env) {
 			throw new TypeError("Object prototype may only be an Object or null");
 		}
 
-		if (contracts.isObject(target)) {
-			setPrototype(target, proto);
+		if (contracts.isObject(target) && !setPrototype(target, proto)) {
+			throw new TypeError(`${target.className} is not extensible`);
 		}
 
 		return target;
@@ -71,23 +71,27 @@ export default function (env) {
 
 	let proto = objectClass.getValue("prototype");
 	let stringTagKey = SymbolType.getByKey("toStringTag");
-	let toStringFunc = objectFactory.createBuiltInFunction(function () {
-		if (this.node.className !== "Object") {
-			return objectFactory.createPrimitive(`[object ${this.node.className}]`);
-		}
 
-		let tag = this.node.className;
-		let tagProperty = this.node.getProperty(stringTagKey);
-		if (tagProperty) {
-			let tagValue = tagProperty.getValue();
-			if (tagValue && tagValue.type === "string") {
-				tag = tagValue.toNative();
+	function objectToString (obj) {
+		let tag = obj.className;
+
+		if (!contracts.isNullOrUndefined(obj)) {
+			let tagProperty = obj.getProperty(stringTagKey);
+			if (tagProperty) {
+				let tagValue = tagProperty.getValue();
+				if (tagValue && tagValue.type === "string") {
+					tag = tagValue.toNative();
+				}
 			}
 		}
 
 		return objectFactory.createPrimitive(`[object ${tag}]`);
-	}, 0, "Object.prototype.toString");
+	};
 
-	proto.define("toString", toStringFunc);
-	proto.define("toLocaleString", toStringFunc);
+	proto.define("toString", objectFactory.createBuiltInFunction(function () { return objectToString(this.node); }, 0, "Object.prototype.toString"));
+
+	proto.define("toLocaleString", objectFactory.createBuiltInFunction(function () {
+		contracts.assertIsNotNullOrUndefined(this.node, "Object.prototype.toLocaleString");
+		return objectToString(this.node);
+	}, 0, "Object.prototype.toLocaleString"));
 }
