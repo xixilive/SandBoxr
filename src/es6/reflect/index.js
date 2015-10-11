@@ -2,7 +2,7 @@ import {execute as exec} from "../../utils/func";
 import {toArray,toPropertyKey} from "../../utils/native";
 import * as contracts from "../../utils/contracts";
 import {NULL,UNDEFINED} from "../../types/primitive-type";
-import {defineProperty,getOwnPropertyDescriptor} from "../../ecma-5.1/object/";
+import {defineProperty,getOwnPropertyDescriptor} from "../../es5/object/";
 
 export function setPrototype (target, proto) {
 	// check whether prototype chain already includes object

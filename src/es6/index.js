@@ -1,4 +1,4 @@
-import ecma5 from "../ecma-5.1/";
+import ecma5 from "../es5/";
 import numberAPI from "./number/";
 import arrayAPI from "./array/";
 import objectAPI from "./object/";
@@ -46,7 +46,7 @@ export default function (env) {
 	globalObject.getValue("String").define("length", objectFactory.createPrimitive(1), lengthAttr);
 	globalObject.getValue("Date").define("length", objectFactory.createPrimitive(7), lengthAttr);
 	globalObject.getValue("RegExp").define("length", objectFactory.createPrimitive(2), lengthAttr);
-	
+
 	let funcProto = env.global.getValue("Function").getValue("prototype");
 
 	let thrower = function () {

@@ -1,5 +1,5 @@
 import {UNDEFINED} from "../../types/primitive-type";
-import {executeCallback} from "../../ecma-5.1/array/";
+import {executeCallback} from "../../es5/array/";
 import {toLength,toObject,toBoolean,toInteger} from "../../utils/native";
 import iterate from "../../iterators/";
 import {construct, execute as exec} from "../../utils/func";

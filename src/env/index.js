@@ -3,8 +3,8 @@ import {ExecutionContext} from "../execution-context";
 import {DeclarativeEnvironment} from "./declarative-environment";
 import {ObjectEnvironment} from "./object-environment";
 import {Reference} from "./reference";
-import ecma5 from "../ecma-5.1";
-import ecma6 from "../ecma-6";
+import es5 from "../es5";
+import es6 from "../es6";
 import operators from "../utils/operators";
 import * as contracts from "../utils/contracts";
 import {Scope} from "./scope";
@@ -22,7 +22,7 @@ export class Environment {
 		this.globalScope = null;
 
 		this.options = Object.assign({}, defaultOptions, options);
-		(options.ecmaVersion === 6 ? ecma6 : ecma5)(this);
+		(options.ecmaVersion === 6 ? es6 : es5)(this);
 
 		// todo: improve this
 		this.ops = Object.assign(operators, options.operators);
