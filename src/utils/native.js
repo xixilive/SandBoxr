@@ -137,6 +137,10 @@ export function* toPrimitive (env, obj, preferredType) {
 		return yield getString(env, obj);
 	}
 
+	if (obj && obj.isSymbol) {
+		throw new TypeError("Cannot convert Symbol to a number");
+	}
+
 	// default case/number
 	return yield getPrimitive(env, obj);
 }
@@ -148,10 +152,6 @@ export function* toString (env, obj) {
 export function* toNumber (env, obj) {
 	if (!obj || obj.type === "undefined") {
 		return NaN;
-	}
-
-	if (obj.isSymbol) {
-		throw new TypeError("Cannot convert Symbol to a number");
 	}
 
 	return Number(yield toPrimitive(env, obj, "number"));
