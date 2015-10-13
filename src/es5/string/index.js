@@ -11,9 +11,21 @@ export default function stringApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
 
-	let stringClass = objectFactory.createFunction(function* (value) {
-		let stringValue = value ? (yield toString(env, value.getValue())) : "";
+	function* getString (value) {
+		if (!value) {
+			return "";
+		}
 
+		if (value.isSymbol) {
+			return `Symbol(${value.description})`;
+		}
+
+		return yield toString(env, value.getValue());
+	}
+
+	let stringClass = objectFactory.createFunction(function* (value) {
+		let stringValue = yield getString(value);
+		
 		// called as new
 		if (this.isNew) {
 			return primitiveToObject(env, stringValue);

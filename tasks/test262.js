@@ -50,15 +50,17 @@ gulp.task("test262-6", function () {
 
 
 	// built-ins
-	//	- object -41
-	//	- number -1
-	//	- boolean +
-	//	- array -21
-	//	- date -8
+	//	- Object -41
+	//	- Number -1
+	//	- Boolean +
+	//	- Array -21
+	//	- Date -8
 	//	- undefined +
-	//	- symbol -2
+	//	- Symbol -2
+	//	- String -8
+	//	- Error +
 
-	return streamer6({ files: ["/built-ins/string/**/*.js"] })
+	return streamer6({ files: ["/built-ins/decodeuri/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 

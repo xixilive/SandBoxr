@@ -1,4 +1,6 @@
 import {isReserved,isStrictReserved} from "../keywords";
+import {SymbolType} from "../types/symbol-type";
+import {toBoolean} from "./native";
 
 const objectPattern = /\[object (\w+)\]/;
 const integerPattern = /^-?\d+$/;
@@ -112,6 +114,23 @@ export function	isObject (obj) {
 	}
 
 	return true;
+}
+
+export function isRegExp (obj) {
+	if (!isObject(obj)) {
+		return false;
+	}
+
+	let matchKey = SymbolType.getByKey("match");
+	let matchProp = obj.getProperty(matchKey);
+	if (matchProp) {
+		let matchValue = matchProp.getValue();
+		if (!isUndefined(matchValue)) {
+			return toBoolean(matchValue);
+		}
+	}
+
+	return obj.className === "RegExp";
 }
 
 export function isOctalLiteral (rawValue, actualValue) {

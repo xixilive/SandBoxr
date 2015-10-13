@@ -3,6 +3,7 @@ import numberAPI from "./number/";
 import arrayAPI from "./array/";
 import objectAPI from "./object/";
 import symbolAPI from "./symbol/";
+import stringAPI from "./string/";
 import setAPI from "./set/";
 import mapAPI from "./map/";
 import reflectAPI from "./reflect/";
@@ -20,6 +21,7 @@ export default function (env) {
 
 	objectAPI(env);
 	numberAPI(env);
+	stringAPI(env);
 	arrayAPI(env);
 	setAPI(env);
 	mapAPI(env);
@@ -27,7 +29,7 @@ export default function (env) {
 	// setup class symbols
 	let stringTagKey = SymbolType.getByKey("toStringTag");
 	let speciesKey = SymbolType.getByKey("species");
-	["Function", "Number", "Boolean", "Object", "Array", "String", "Date", "RegExp", "JSON"].forEach(typeName => {
+	["Function", "Number", "Boolean", "Object", "Array", "String", "Date", "RegExp", "JSON", "Error"].forEach(typeName => {
 		let ctor = globalObject.getValue(typeName);
 		ctor.define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
 

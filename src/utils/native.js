@@ -129,12 +129,12 @@ export function* toPrimitive (env, obj, preferredType) {
 		preferredType = obj.primitiveHint;
 	}
 
-	if (preferredType === "string") {
-		return yield getString(env, obj);
+	if (obj && obj.isSymbol) {
+		throw new TypeError(`Cannot convert Symbol to a ${preferredType}`);
 	}
 
-	if (obj && obj.isSymbol) {
-		throw new TypeError("Cannot convert Symbol to a number");
+	if (preferredType === "string") {
+		return yield getString(env, obj);
 	}
 
 	// default case/number
