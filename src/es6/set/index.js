@@ -11,6 +11,7 @@ export default function (env) {
 
 	let globalObject = env.global;
 	let objectFactory = env.objectFactory;
+	let proto = objectFactory.createObject();
 
 	let setClass = objectFactory.createFunction(function* (iterable) {
 		if (!this.isNew) {
@@ -29,9 +30,7 @@ export default function (env) {
 		}
 
 		return obj;
-	}, null, { name: "Set" });
-
-	let proto = setClass.getValue("prototype");
+	}, proto, { name: "Set" });
 
 	proto.define("add", objectFactory.createBuiltInFunction(function (value) {
 		assertIsSet(this.node, "Set.prototype.add");

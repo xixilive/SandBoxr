@@ -34,11 +34,7 @@ export default function (env, proto) {
 				value = objectFactory.createPrimitive(value[index]);
 			}
 
-			let result = objectFactory.createObject();
-			result.define("done", objectFactory.createPrimitive(done));
-			result.define("value", value);
-			yield result;
-
+			yield objectFactory.createIteratorResult({value,done});
 			index++;
 		}
 	}

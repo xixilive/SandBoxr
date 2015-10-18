@@ -33,27 +33,46 @@ export default function (env) {
 
 	objectClass.define("getOwnPropertyNames", objectFactory.createBuiltInFunction(function (obj) {
 		let o = toObject(env, obj, true);
-		let keys = o.getOwnPropertyKeys().map(k => objectFactory.createPrimitive(k));
+		let keys = [];
+
+		o.getOwnPropertyKeys("String").forEach(key => {
+			if (typeof key === "string") {
+				keys.push(objectFactory.createPrimitive(key));
+			}
+		});
+
 		return objectFactory.createArray(keys);
 	}, 1, "Object.getOwnPropertyNames"));
 
 
 	objectClass.define("getOwnPropertySymbols", objectFactory.createBuiltInFunction(function (obj) {
 		let o = toObject(env, obj, true);
-		let keys = o.getOwnPropertyKeys("Symbol");
+		let keys = [];
+
+		o.getOwnPropertyKeys("Symbol").forEach(key => {
+			if (key && key.isSymbol) {
+				keys.push(key);
+			}
+		});
+
 		return objectFactory.createArray(keys);
 	}, 1, "Object.getOwnPropertySymbols"));
 
 	objectClass.define("keys", objectFactory.createBuiltInFunction(function (obj) {
 		let o = toObject(env, obj, true);
-		let keys = [];
-		for (let key in o.properties) {
-			if (o.properties[key].enumerable) {
-				keys.push(objectFactory.createPrimitive(key));
-			}
-		}
+		let arr = objectFactory.create("Array");
+		let index = 0;
 
-		return objectFactory.createArray(keys);
+		o.getOwnPropertyKeys("String").forEach(key => {
+			if (typeof key === "string") {
+				let propInfo = o.getProperty(key);
+				if (propInfo && propInfo.enumerable) {
+					arr.putValue(index++, objectFactory.createPrimitive(key), true, env);
+				}
+			}
+		});
+
+		return arr;
 	}, 1, "Object.keys"));
 
 	objectClass.define("setPrototypeOf", objectFactory.createBuiltInFunction(function (target, proto) {

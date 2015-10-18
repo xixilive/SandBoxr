@@ -4,6 +4,7 @@ import arrayAPI from "./array/";
 import objectAPI from "./object/";
 import symbolAPI from "./symbol/";
 import stringAPI from "./string/";
+import proxyAPI from "./proxy/";
 import setAPI from "./set/";
 import mapAPI from "./map/";
 import reflectAPI from "./reflect/";
@@ -25,7 +26,8 @@ export default function (env) {
 	arrayAPI(env);
 	setAPI(env);
 	mapAPI(env);
-
+	proxyAPI(env);
+	
 	// setup class symbols
 	let stringTagKey = SymbolType.getByKey("toStringTag");
 	let speciesKey = SymbolType.getByKey("species");

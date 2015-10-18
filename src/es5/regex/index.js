@@ -6,6 +6,9 @@ export default function regexApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
 
+	let proto = objectFactory.createObject();
+	proto.className = "RegExp";
+
 	let regexClass = objectFactory.createFunction(function* (pattern, flags) {
 		if (pattern && pattern.className === "RegExp") {
 			if (contracts.isUndefined(flags)) {
@@ -19,10 +22,7 @@ export default function regexApi (env) {
 		flags = contracts.isUndefined(flags) ? "" : (yield toString(env, flags));
 
 		return objectFactory.create("RegExp", new RegExp(patternString, flags));
-	}, null, { configurable: false, enumerable: false, writable: false });
-
-	let proto = regexClass.getValue("prototype");
-	proto.className = "RegExp";
+	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	proto.define("test", objectFactory.createBuiltInFunction(function* (str) {
 		let stringValue = yield toString(env, str);

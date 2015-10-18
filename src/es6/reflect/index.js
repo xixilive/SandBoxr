@@ -24,8 +24,7 @@ export function setPrototype (target, proto) {
 		current = current.getPrototype();
 	}
 
-	target.setPrototype(proto);
-	return true;
+	return target.setPrototype(proto);
 }
 
 export default function (env) {
@@ -101,7 +100,7 @@ export default function (env) {
 
 	reflectClass.define("isExtensible", objectFactory.createBuiltInFunction(function (target) {
 		contracts.assertIsObject(target, "Reflect.isExtensible");
-		return objectFactory.createPrimitive(target.extensible);
+		return objectFactory.createPrimitive(target.isExtensible());
 	}, 1, "Reflect.isExtensible"));
 
 	reflectClass.define("ownKeys", objectFactory.createBuiltInFunction(function (target) {
@@ -124,55 +123,60 @@ export default function (env) {
 
 	reflectClass.define("preventExtensions", objectFactory.createBuiltInFunction(function (target) {
 		contracts.assertIsObject(target, "Reflect.preventExtensions");
-		target.preventExtensions();
-		return objectFactory.createPrimitive(true);
+		return objectFactory.createPrimitive(target.preventExtensions());
 	}, 1, "Reflect.preventExtensions"));
 
-	reflectClass.define("set", objectFactory.createBuiltInFunction(function* (target, propertyKey, value, receiver) {
+	reflectClass.define("set", objectFactory.createBuiltInFunction(function* (target, key, value, receiver) {
 		contracts.assertIsObject(target, "Reflect.set");
-		let key = yield toPropertyKey(env, propertyKey);
-		receiver = receiver || target;
+		let k = yield toPropertyKey(env, key);
 
-		let descriptor = target.getProperty(key);
-		if (descriptor) {
-			if (target !== receiver && receiver.owns(key)) {
-				let receiverDescriptor = receiver.getProperty(key);
-				if (!receiverDescriptor.dataProperty) {
-					return objectFactory.createPrimitive(false);
-				}
-			}
-
-			if (!descriptor.dataProperty) {
-				descriptor.bind(receiver);
-				descriptor.setValue(value);
-				return objectFactory.createPrimitive(true);
-			}
-
-			if (!receiver.owns(key)) {
-				return objectFactory.createPrimitive(receiver.defineOwnProperty(key, {
-					value: value,
-					configurable: true,
-					enumerable: true,
-					writable: true
-				}, false, env));
-			}
-
-			if (!descriptor.canUpdate({ value })) {
-				return objectFactory.createPrimitive(false);
-			}
-
-			receiver.putValue(key, value, false, env);
-			return objectFactory.createPrimitive(true);
+		if (contracts.isUndefined(receiver)) {
+			receiver = target;
 		}
 
-		let result = receiver.defineOwnProperty(key, {
-			value: value,
-			configurable: true,
-			enumerable: true,
-			writable: true
-		}, false, env);
+		return objectFactory.createPrimitive(target.setValue(k, value, receiver));
+		// receiver = receiver || target;
 
-		return objectFactory.createPrimitive(result);
+		// let descriptor = target.getProperty(key);
+		// if (descriptor) {
+		// 	if (target !== receiver && receiver.owns(key)) {
+		// 		let receiverDescriptor = receiver.getProperty(key);
+		// 		if (!receiverDescriptor.dataProperty) {
+		// 			return objectFactory.createPrimitive(false);
+		// 		}
+		// 	}
+
+		// 	if (!descriptor.dataProperty) {
+		// 		descriptor.bind(receiver);
+		// 		descriptor.setValue(value);
+		// 		return objectFactory.createPrimitive(true);
+		// 	}
+
+		// 	if (!receiver.owns(key)) {
+		// 		return objectFactory.createPrimitive(receiver.defineOwnProperty(key, {
+		// 			value: value,
+		// 			configurable: true,
+		// 			enumerable: true,
+		// 			writable: true
+		// 		}, false, env));
+		// 	}
+
+		// 	if (!descriptor.canUpdate({ value })) {
+		// 		return objectFactory.createPrimitive(false);
+		// 	}
+
+		// 	let result = receiver.putValue(key, value, false, env);
+		// 	return objectFactory.createPrimitive(result);
+		// }
+
+		// let result = receiver.defineOwnProperty(key, {
+		// 	value: value,
+		// 	configurable: true,
+		// 	enumerable: true,
+		// 	writable: true
+		// }, false, env);
+
+		// return objectFactory.createPrimitive(result);
 	}, 3, "Reflect.set"));
 
 	reflectClass.define("setPrototypeOf", objectFactory.createBuiltInFunction(function (target, proto) {

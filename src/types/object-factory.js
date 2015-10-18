@@ -12,6 +12,7 @@ import {SetType} from "./set-type";
 import {IteratorType} from "./iterator-type";
 import {SymbolType} from "./symbol-type";
 import {MapType} from "./map-type";
+import {ProxyType} from "./proxy-type";
 import * as contracts from "../utils/contracts";
 
 let orphans = Object.create(null);
@@ -33,8 +34,7 @@ function setOrphans (scope) {
 }
 
 function setProto (typeName, instance, env) {
-	let parent = env.getReference(typeName);
-	if (parent.isUnresolved()) {
+	if (!env.global || !env.global.owns(typeName)) {
 		// during initialization it is possible for objects to be created
 		// before the types have been registered - add a registry of items
 		// and these can be filled in when the type is registered
@@ -44,7 +44,7 @@ function setProto (typeName, instance, env) {
 		return;
 	}
 
-	let proto = parent.getValue().getValue("prototype");
+	let proto = env.global.getValue(typeName).getValue("prototype");
 	instance.setPrototype(proto);
 }
 
@@ -195,6 +195,23 @@ export class ObjectFactory {
 		return instance;
 	}
 
+	createProxy (target, handler) {
+		contracts.assertIsObject(target, "Proxy");
+		contracts.assertIsObject(handler, "Proxy");
+
+		if (target.isProxy && target.revoked) {
+			throw new TypeError();
+		}
+
+		if (handler.isProxy && handler.revoked) {
+			throw new TypeError();
+		}
+
+		let instance = new ProxyType(target, handler);
+		instance.env = this.env;
+		return instance;
+	}
+
 	createArguments (args, callee, strict) {
 		let instance = new ArgumentType();
 		let objectClass = this.env.global.getValue("Object");
@@ -219,7 +236,22 @@ export class ObjectFactory {
 	}
 
 	createIterator (iterable, proto, kind) {
+		let self = this;
 		let instance = new IteratorType(iterable, kind);
+
+		if (!proto) {
+			proto = this.createObject();
+			proto.className = "[Symbol.iterator]";
+			proto.define("next", this.createBuiltInFunction(function () {
+				let result = this.node.advance();
+				if (result.value) {
+					return result.value;
+				}
+
+				return self.createIteratorResult({done: true});
+			}));
+		}
+
 		instance.setPrototype(proto);
 		return instance;
 	}

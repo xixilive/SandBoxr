@@ -8,6 +8,10 @@ export default function numberApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
 
+	let proto = objectFactory.createObject();
+	proto.className = "Number";
+	proto.value = 0;
+
 	let numberClass = objectFactory.createFunction(function* (obj) {
 		let numberValue = Number(yield toPrimitive(env, obj, "number"));
 
@@ -16,11 +20,7 @@ export default function numberApi (env) {
 		}
 
 		return objectFactory.create("Number", numberValue);
-	}, null, { configurable: false, enumerable: false, writable: false });
-
-	let proto = numberClass.getValue("prototype");
-	proto.className = "Number";
-	proto.value = 0;
+	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	proto.define("toString", objectFactory.createBuiltInFunction(function* (radix) {
 		contracts.assertIsNotGeneric(this.node, "Number", "Number.prototype.toString");

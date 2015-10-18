@@ -8,6 +8,31 @@ function getPropertySource (key) {
 	return isSymbol(key) ? "symbols" : "properties";
 }
 
+function* propertyIterator (env, obj) {
+	let visited = Object.create(null);
+	let objectFactory = env.objectFactory;
+
+	let current = obj;
+	while (current) {
+		let keys = current.getOwnPropertyKeys("String");
+		for (let key of keys) {
+			let desc = current.getProperty(key);
+			if (desc) {
+				if (desc.enumerable && !(key in visited)) {
+					let value = objectFactory.createPrimitive(key);
+					yield objectFactory.createIteratorResult({value});
+				}
+
+				visited[key] = true;
+			}
+		}
+
+		current = current.getPrototype();
+	}
+
+	return objectFactory.createIteratorResult({done: true});
+}
+
 export class ObjectType {
 	constructor () {
 		this.isPrimitive = false;
@@ -30,19 +55,23 @@ export class ObjectType {
 	setPrototype (proto) {
 		this.proto = proto;
 		this.version++;
+
+		return true;
 	}
 
-	getProperty (key) {
+	getProperty (key, target) {
+		target = target || this;
+
+		let localKey = String(key);
 		let source = getPropertySource(key);
-		key = String(key);
 
-		let current = this;
-		while (current) {
-			if (key in current[source]) {
-				return current[source][key].bind(this);
-			}
+		if (localKey in this[source]) {
+			return this[source][localKey].bind(target);
+		}
 
-			current = current.getPrototype();
+		let current = this.getPrototype();
+		if (current) {
+			return current.getProperty(key, target);
 		}
 
 		return undefined;
@@ -52,20 +81,88 @@ export class ObjectType {
 		return this[getPropertySource(key)][String(key)];
 	}
 
-	getOwnPropertyKeys (keyType = "String") {
-		if (keyType === "Symbol") {
-			return this.symbols.map(desc => desc.key);
+	getOwnPropertyKeys (keyType) {
+		let keys = [];
+
+		if (keyType !== "Symbol") {
+			keys = Object.keys(this.properties);
 		}
 
-		return Object.keys(this.properties);
+		if (keyType !== "String") {
+			for (let key in this.symbols) {
+				keys.push(this.symbols[key].key);
+			}
+		}
+
+		return keys;
+	}
+
+	isExtensible () {
+		return this.extensible;
+	}
+
+	getIterator (env) {
+		return env.objectFactory.createIterator(propertyIterator(env, this));
 	}
 
 	has (key) {
-		return !!this.getProperty(key);
+		if (String(key) in this[getPropertySource(key)]) {
+			return true;
+		}
+
+		let current = this.getPrototype();
+		if (current) {
+			return current.has(key);
+		}
+
+		return false;
 	}
 
 	owns (key) {
 		return String(key) in this[getPropertySource(key)];
+	}
+
+	setValue (key, value, receiver) {
+		receiver = receiver || this;
+
+		let descriptor = this.getProperty(key);
+		if (descriptor) {
+			if (this !== receiver && receiver.owns(key)) {
+				let receiverDescriptor = receiver.getProperty(key);
+				if (!receiverDescriptor.dataProperty) {
+					return false;
+				}
+			}
+
+			if (!descriptor.dataProperty) {
+				descriptor.bind(receiver);
+				descriptor.setValue(value);
+				return true;
+			}
+
+			if (!receiver.owns(key)) {
+				return receiver.defineOwnProperty(key, {
+					value: value,
+					configurable: true,
+					enumerable: true,
+					writable: true
+				}, false);
+			}
+
+			if (!descriptor.canUpdate({ value })) {
+				return false;
+			}
+
+			descriptor.setValue(value);
+			return true;
+		}
+
+		return receiver.defineOwnProperty(key, {
+			value: value,
+			configurable: true,
+			enumerable: true,
+			writable: true
+		}, false);
 	}
 
 	putValue (key, value, throwOnError, env) {
@@ -201,6 +298,7 @@ export class ObjectType {
 
 	preventExtensions () {
 		this.extensible = false;
+		return true;
 	}
 
 	seal () {
@@ -209,14 +307,6 @@ export class ObjectType {
 		}
 
 		this.preventExtensions();
-	}
-
-	equals (obj) {
-		if (this.isPrimitive && obj.isPrimitive) {
-			return this.value === obj.value;
-		}
-
-		return this === obj;
 	}
 
 	toNative () {

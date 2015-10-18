@@ -27,7 +27,7 @@ export function* executeCallback (env, callback, entry, thisArg, arr) {
 		thisArg = callback.isStrict() ? UNDEFINED : env.global;
 	}
 
-	let scope = callback.createScope(env, thisArg, false);
+	let scope = env.createExecutionScope(callback, thisArg);
 	scope.init(callback.node.body);
 
 	let args = [entry.value, env.objectFactory.createPrimitive(entry.key), arr];
@@ -48,7 +48,7 @@ export default function arrayApi (env) {
 	const objectFactory = env.objectFactory;
 
 	function* executeAccumulator (callback, priorValue, entry, arr) {
-		let scope = callback.createScope(env);
+		let scope = env.createExecutionScope(callback);
 		scope.init(callback.node.body);
 
 		let args = [priorValue || UNDEFINED, entry.value || UNDEFINED, objectFactory.createPrimitive(entry.key), arr];
@@ -73,6 +73,10 @@ export default function arrayApi (env) {
 		};
 	}
 
+	let proto = objectFactory.createObject();
+	proto.className = "Array";
+	proto.define("length", objectFactory.createPrimitive(0), { configurable: false, enumerable: false, writable: true });
+
 	let arrayClass = objectFactory.createFunction(function (length) {
 		let newArray = objectFactory.create("Array");
 
@@ -88,11 +92,7 @@ export default function arrayApi (env) {
 		}
 
 		return newArray;
-	}, null, { configurable: false, enumerable: false, writable: false });
-
-	let proto = arrayClass.getValue("prototype");
-	proto.className = "Array";
-	proto.define("length", objectFactory.createPrimitive(0), { configurable: false, enumerable: false, writable: true });
+	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	arrayClass.define("isArray", objectFactory.createBuiltInFunction(function (obj) {
 		return objectFactory.createPrimitive(!!(obj && obj.className === "Array"));
@@ -358,7 +358,7 @@ export default function arrayApi (env) {
 		index = getStartIndex(index, length);
 
 		for (let {key, value} of iterate.forward(env, this.node, index, length)) {
-			if (searchElement.equals(value || UNDEFINED)) {
+			if (env.ops.areSame(searchElement, value || UNDEFINED)) {
 				return objectFactory.createPrimitive(key);
 			}
 		}
@@ -376,7 +376,7 @@ export default function arrayApi (env) {
 		}
 
 		for (let {key, value} of iterate.reverse(env, this.node, index)) {
-			if (searchElement.equals(value || UNDEFINED)) {
+			if (env.ops.areSame(searchElement, value || UNDEFINED)) {
 				return objectFactory.createPrimitive(key);
 			}
 		}

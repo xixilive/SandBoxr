@@ -23,23 +23,23 @@ export default function stringApi (env) {
 		return yield toString(env, value.getValue());
 	}
 
+	let proto = objectFactory.createObject();
+
+	// prototype can be coerced into an empty string
+	proto.value = "";
+	proto.className = "String";
+	proto.defineOwnProperty("length", { value: objectFactory.createPrimitive(0) });
+
 	let stringClass = objectFactory.createFunction(function* (value) {
 		let stringValue = yield getString(value);
-		
+
 		// called as new
 		if (this.isNew) {
 			return primitiveToObject(env, stringValue);
 		}
 
 		return objectFactory.createPrimitive(stringValue);
-	}, null, { configurable: false, enumerable: false, writable: false });
-
-	let proto = stringClass.getValue("prototype");
-
-	// prototype can be coerced into an empty string
-	proto.value = "";
-	proto.className = "String";
-	proto.defineOwnProperty("length", { value: objectFactory.createPrimitive(0) });
+	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	proto.define("search", objectFactory.createBuiltInFunction(function* (regex) {
 		let stringValue = yield toString(env, this.node);

@@ -7,6 +7,11 @@ export default function errorApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
 
+	let proto = objectFactory.createObject();
+	proto.className = "Error";
+	proto.define("name", objectFactory.createPrimitive("Error"));
+	proto.define("message", objectFactory.createPrimitive(""));
+
 	let errorClass = objectFactory.createFunction(function* (message) {
 		let messageString;
 		if (!contracts.isNullOrUndefined(message)) {
@@ -14,12 +19,7 @@ export default function errorApi (env) {
 		}
 
 		return objectFactory.create("Error", new Error(messageString));
-	}, null, { configurable: false, enumerable: false, writable: false });
-
-	let proto = errorClass.getValue("prototype");
-	proto.className = "Error";
-	proto.define("name", objectFactory.createPrimitive("Error"));
-	proto.define("message", objectFactory.createPrimitive(""));
+	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	proto.define("toString", objectFactory.createBuiltInFunction(function* () {
 		let name = this.node.getValue("name");
@@ -40,17 +40,17 @@ export default function errorApi (env) {
 	globalObject.define("Error", errorClass);
 
 	errorTypes.forEach(errorType => {
-		let errClass = objectFactory.createFunction(function* (message) {
-			let messageString = yield toString(env, message);
-			let nativeError = new global[errorType](messageString);
-			return objectFactory.create(errorType, nativeError);
-		}, null, { configurable: false, enumerable: false, writable: false });
-
-		let typeProto = errClass.getValue("prototype");
+		let typeProto = objectFactory.createObject();
 		typeProto.define("name", objectFactory.createPrimitive(errorType));
 
 		// add to prototype chain to represent inheritance
 		typeProto.setPrototype(proto);
+		
+		let errClass = objectFactory.createFunction(function* (message) {
+			let messageString = yield toString(env, message);
+			let nativeError = new global[errorType](messageString);
+			return objectFactory.create(errorType, nativeError);
+		}, typeProto, { configurable: false, enumerable: false, writable: false });
 
 		globalObject.define(errorType, errClass);
 	});

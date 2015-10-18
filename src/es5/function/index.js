@@ -158,7 +158,7 @@ export default function functionApi (env) {
 		nativeFunc.nativeLength = Math.max(params.length - args.length, 0);
 		nativeFunc.strict = env.isStrict() || !fn.native && contracts.isStrictNode(fn.node.body.body);
 
-		let boundFunc = objectFactory.createFunction(nativeFunc);
+		let boundFunc = objectFactory.createFunction(nativeFunc, null);
 		boundFunc.bindScope(this.env.current);
 		boundFunc.bindThis(thisArg);
 

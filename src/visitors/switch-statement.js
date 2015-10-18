@@ -22,7 +22,7 @@ export default function* SwitchStatement (context) {
 		if (!passed) {
 			if (current.test) {
 				let caseValue = (yield context.create(current.test).execute()).result.getValue();
-				if (!caseValue.equals(testValue)) {
+				if (!context.env.ops.areSame(caseValue, testValue)) {
 					continue;
 				}
 			} else {

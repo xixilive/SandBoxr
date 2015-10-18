@@ -65,7 +65,7 @@ describe("API", () => {
 			}
 
 			return env.objectFactory.createPrimitive(stringValue);
-		}));
+		}, null));
 
 		let ast = parser.parse("String.concat('foo','bar')==='foobar';");
 		let sandbox = SandBoxr.create(ast);

@@ -38,6 +38,12 @@ export function	assertIsNotConstructor (context, methodName) {
 	}
 }
 
+export function assertIsConstructor (context, methodName) {
+	if (!context.isNew) {
+		throw new TypeError(`${methodName} must be called with 'new'`);
+	}
+}
+
 export function	assertIsValidArrayLength (length) {
 	if (!isValidArrayLength(length)) {
 		throw new RangeError("Invalid array length");
@@ -202,6 +208,10 @@ function isDirective (node) {
 }
 
 export function isStrictNode (nodes) {
+	if (!nodes) {
+		return false;
+	}
+
 	if (Array.isArray(nodes)) {
 		for (let node of nodes) {
 			if (!isDirective(node)) {
@@ -212,6 +222,12 @@ export function isStrictNode (nodes) {
 				return true;
 			}
 		}
+
+		return false;
+	}
+
+	if (nodes.body) {
+		return isStrictNode(nodes.body);
 	}
 
 	return false;

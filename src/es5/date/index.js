@@ -9,6 +9,10 @@ export default function dateApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
 
+	let proto = objectFactory.createObject();
+	proto.className = "Date";
+	proto.value = new Date(0);
+
 	let dateClass = objectFactory.createFunction(function* (p1, p2, p3, p4, p5, p6, p7) {
 		let dateValue, args;
 
@@ -55,7 +59,7 @@ export default function dateApi (env) {
 
 		dateValue = Date(...args);
 		return objectFactory.createPrimitive(dateValue);
-	}, null, { configurable: false, enumerable: false, writable: false });
+	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	dateClass.define("parse", objectFactory.createBuiltInFunction(function* (value) {
 		let stringValue = yield toPrimitive(env, value, "string");
@@ -67,10 +71,6 @@ export default function dateApi (env) {
 		let args = yield* map(arguments, function* (arg) { return yield toPrimitive(env, arg, "number"); });
 		return objectFactory.createPrimitive(Date.UTC.apply(null, args));
 	}, 7, "Date.prototype.UTC"));
-
-	let proto = dateClass.getValue("prototype");
-	proto.className = "Date";
-	proto.value = new Date(0);
 
 	staticMethods.forEach(name => {
 		dateClass.define(name, toNativeFunction(env, Date[name], "Date." + name));

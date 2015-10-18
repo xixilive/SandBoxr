@@ -156,6 +156,24 @@ export class Environment {
 		return this.setScope(new ObjectEnvironment(this.current, obj, thisArg, this));
 	}
 
+	createExecutionScope (fn, thisArg) {
+		let priorScope = this.current.scope;
+
+		// if a parent scope is defined we need to limit this scope to that scope
+		if (fn.boundScope) {
+			this.setScope(fn.boundScope.scope);
+		}
+
+		thisArg = fn.boundThis || thisArg;
+		if (fn.arrow) {
+			thisArg = this.getThisBinding();
+		}
+
+		let scope = this.createScope(thisArg, priorScope);
+		scope.priorScope = priorScope;
+		return scope;
+	}
+
 	/**
 	 * Sets the current scope.
 	 * @param {Environment} scope - Sets the current environment.

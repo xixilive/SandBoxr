@@ -56,6 +56,34 @@ export class FunctionType extends ObjectType {
 		// }
 	}
 
+	*call (env, thisArg, args, callee) {
+		let self = this;
+		let scope = env.createExecutionScope(this, thisArg);
+		yield scope.loadArgs(this.node.params, args, this);
+		scope.init(this.node && this.node.body);
+
+		return yield scope.use(function* () {
+			let executionResult = yield env.createExecutionContext(self.node.body, callee).execute();
+			let shouldReturn = self.arrow || (executionResult && executionResult.exit);
+
+			if (shouldReturn && executionResult.result) {
+				return executionResult.result;
+			}
+
+			return undefined;
+		});
+	}
+
+	*construct (env, thisArg, args, callee) {
+		thisArg = env.objectFactory.createObject(this);
+		let result = yield this.call(env, thisArg, args, callee);
+		if (result && !result.isPrimitive) {
+			return result;
+		}
+
+		return thisArg;
+	}
+
 	bindThis (thisArg) {
 		this.boundThis = this.boundThis || thisArg;
 	}
@@ -76,23 +104,23 @@ export class FunctionType extends ObjectType {
 		return (this.strict = contracts.isStrictNode(this.node.body.body));
 	}
 
-	createScope (env, thisArg, isNew) {
-		// if a parent scope is defined we need to limit this scope to that scope
-		let priorScope = env.current.scope;
+	// createScope (env, thisArg, isNew) {
+	// 	// if a parent scope is defined we need to limit this scope to that scope
+	// 	let priorScope = env.current.scope;
 
-		if (this.boundScope) {
-			env.setScope(this.boundScope.scope);
-		}
+	// 	if (this.boundScope) {
+	// 		env.setScope(this.boundScope.scope);
+	// 	}
 
-		thisArg = this.boundThis || thisArg;
-		if (this.arrow) {
-			thisArg = env.getThisBinding();
-		}
+	// 	thisArg = this.boundThis || thisArg;
+	// 	if (this.arrow) {
+	// 		thisArg = env.getThisBinding();
+	// 	}
 
-		let scope = env.createScope(thisArg, priorScope);
-		scope.priorScope = priorScope;
-		return scope;
-	}
+	// 	let scope = env.createScope(thisArg, priorScope);
+	// 	scope.priorScope = priorScope;
+	// 	return scope;
+	// }
 
 	hasInstance (obj) {
 		if (obj === this) {

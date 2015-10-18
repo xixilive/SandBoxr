@@ -60,7 +60,7 @@ gulp.task("test262-6", function () {
 	//	- String -8
 	//	- Error +
 
-	return streamer6({ files: ["/built-ins/decodeuri/**/*.js"] })
+	return streamer6({ files: ["/built-ins/proxy/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 

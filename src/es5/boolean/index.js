@@ -5,6 +5,10 @@ export default function booleanApi (env) {
 	const globalObject = env.global;
 	const objectFactory = env.objectFactory;
 
+	let proto = objectFactory.createObject();
+	proto.className = "Boolean";
+	proto.value = false;
+
 	let booleanClass = objectFactory.createFunction(function (obj) {
 		let booleanValue = toBoolean(obj);
 
@@ -14,11 +18,7 @@ export default function booleanApi (env) {
 		}
 
 		return objectFactory.create("Boolean", booleanValue);
-	}, null, { configurable: false, enumerable: false, writable: false });
-
-	let proto = booleanClass.getValue("prototype");
-	proto.className = "Boolean";
-	proto.value = false;
+	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	proto.define("toString", objectFactory.createBuiltInFunction(function () {
 		contracts.assertIsNotGeneric(this.node, "Boolean", "Boolean.prototype.toString");

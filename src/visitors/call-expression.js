@@ -1,6 +1,6 @@
 import {PropertyReference} from "../env/property-reference";
 import {toString,toObject} from "../utils/native";
-import {execute as exec} from "../utils/func";
+import {execute as exec,construct} from "../utils/func";
 import {map} from "../utils/async";
 
 function assignThis (env, fnMember, fn, isNew, native) {
@@ -38,5 +38,5 @@ export default function* CallExpression (context) {
 	let callee = fnMember;
 
 	callee.identifier = fn.name;
-	return context.result(yield exec(context.env, fn, args, thisArg, callee, isNew));
+	return context.result(yield (isNew ? construct : exec)(context.env, fn, args, thisArg, callee));
 }

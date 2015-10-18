@@ -27,17 +27,35 @@ export class NativeFunctionType extends FunctionType {
 			writable: false
 		});
 
-		proto = proto || objectFactory.createObject();
-		proto.properties.constructor = new PropertyDescriptor(this, { configurable: true, enumerable: false, writable: true, value: this });
+		if (proto !== null) {
+			proto = proto || objectFactory.createObject();
+			proto.properties.constructor = new PropertyDescriptor(this, { configurable: true, enumerable: false, writable: true, value: this });
 
-		descriptor = descriptor || { configurable: false, enumerable: false, writable: true };
-		let protoDescriptor = {
-			value: proto,
-			configurable: descriptor.configurable,
-			enumerable: descriptor.enumerable,
-			writable: descriptor.writable
-		};
+			descriptor = descriptor || { configurable: false, enumerable: false, writable: true };
+			let protoDescriptor = {
+				value: proto,
+				configurable: descriptor.configurable,
+				enumerable: descriptor.enumerable,
+				writable: descriptor.writable
+			};
 
-		this.defineOwnProperty("prototype", protoDescriptor);
+			this.defineOwnProperty("prototype", protoDescriptor);
+		}
+	}
+
+	*call (env, thisArg, args) {
+		let self = this;
+		let scope = env.createExecutionScope(this, thisArg);
+		return yield scope.use(function* () {
+			return yield self.nativeFunction.apply(env.createExecutionContext(thisArg, self), args);
+		});
+	}
+
+	*construct (env, thisArg, args) {
+		let self = this;
+		let scope = env.createExecutionScope(this, thisArg);
+		return yield scope.use(function* () {
+			return yield self.nativeFunction.apply(env.createExecutionContext(thisArg, self, true), args);
+		});
 	}
 }

@@ -1,57 +1,63 @@
 import {UNDEFINED} from "../types/primitive-type";
 
 export function* execute (env, fn, args, thisArg, callee, isNew) {
-	let f = fn.node || fn;
-	let params = f.params || [];
+	callee = callee || fn;
+	let returnResult = yield fn[isNew ? "construct" : "call"](env, thisArg, args, callee);
 
-	let scope = fn.createScope(env, thisArg, isNew);
-	let returnResult;
+	// // let f = fn.node || fn;
+	// // let params = f.params || [];
 
-	if (isNew) {
-		returnResult = thisArg;
-	}
+	// let scope = env.createExecutionScope(fn, thisArg);
+	// // let returnResult;
 
-	yield scope.loadArgs(params, args, fn);
-	scope.init(fn.node && fn.node.body);
+	// // if (isNew) {
+	// // 	returnResult = thisArg;
+	// // }
 
-	returnResult = yield scope.use(function* () {
-		if (fn.native) {
-			return yield fn.nativeFunction.apply(env.createExecutionContext(thisArg, callee, isNew), args) || returnResult;
-		}
+	// // yield scope.loadArgs(params, args, fn);
+	// // scope.init(fn.node && fn.node.body);
 
-		let executionResult = yield env.createExecutionContext(fn.node.body, callee, isNew).execute();
-		let shouldReturn = fn.arrow || (executionResult && executionResult.exit);
+	// let returnResult = yield scope.use(function* () {
+	// 	return yield fn[isNew ? "construct" : "call"](env, thisArg, args, callee);
 
-		if (shouldReturn && executionResult.result) {
-			if (!isNew || !executionResult.result.isPrimitive) {
-				return executionResult.result;
-			}
-		}
+	// 	// if (fn.native) {
+	// 	// 	return yield fn.nativeFunction.apply(env.createExecutionContext(thisArg, callee, isNew), args) || returnResult;
+	// 	// }
 
-		return returnResult;
-	});
+	// 	// let executionResult = yield env.createExecutionContext(fn.node.body, callee, isNew).execute();
+	// 	// let shouldReturn = fn.arrow || (executionResult && executionResult.exit);
+
+	// 	// if (shouldReturn && executionResult.result) {
+	// 	// 	if (!isNew || !executionResult.result.isPrimitive) {
+	// 	// 		return executionResult.result;
+	// 	// 	}
+	// 	// }
+
+	// 	// return returnResult;
+	// });
 
 	return returnResult || UNDEFINED;
 }
 
 export function* construct (env, fn, args = []) {
-	let obj = env.objectFactory.createObject(fn);
 	let callee = fn.node || fn;
-	return yield execute(env, fn, args, obj, callee, true);
+	return yield execute(env, fn, args, null, callee, true);
 }
 
 export function* call (env, fn, params, args, thisArg, callee) {
-	let scope = fn.createScope(env, thisArg, false);
-	yield scope.loadArgs(params, args, fn);
-	scope.init(fn.node && fn.node.body);
+	return yield fn.call(env, thisArg, args, callee);
+	// let scope = env.createExecutionScope(fn, thisArg);
+	// yield scope.loadArgs(params, args, fn);
+	// scope.init(fn.node && fn.node.body);
 
-	return yield scope.use(function* () {
-		if (fn.native) {
-			return yield fn.nativeFunction.apply(env.createExecutionContext(thisArg, callee), args);
-		}
+	// return yield scope.use(function* () {
+	// 	return yield fn.call(env, thisArg, args, callee);
+	// 	// if (fn.native) {
+	// 	// 	return yield fn.nativeFunction.apply(env.createExecutionContext(thisArg, callee), args);
+	// 	// }
 
-		return yield env.createExecutionContext(fn.node.body, callee).execute();
-	});
+	// 	// return yield env.createExecutionContext(fn.node.body, callee).execute();
+	// });
 }
 
 export function* tryExecute (env, obj, name, args = []) {
@@ -63,18 +69,20 @@ export function* tryExecute (env, obj, name, args = []) {
 	fn = fn.getValue();
 
 	if (fn && fn.className === "Function") {
-		let scope = fn.createScope(env, obj);
-		yield scope.loadArgs(fn.node && fn.node.params, args, fn);
-		scope.init(fn.node && fn.node.body);
+		let executionResult = yield fn.call(env, obj, args, fn);
+		// let scope = env.createExecutionScope(fn, obj);
+		// yield scope.loadArgs(fn.node && fn.node.params, args, fn);
+		// scope.init(fn.node && fn.node.body);
 
-		let executionResult = yield scope.use(function* () {
-			if (fn.native) {
-				return yield fn.nativeFunction.apply(env.createExecutionContext(obj, obj), args);
-			}
+		// let executionResult = yield scope.use(function* () {
+		// 	return yield fn.call(env, obj, args, fn);
+		// 	// if (fn.native) {
+		// 	// 	return yield fn.nativeFunction.apply(env.createExecutionContext(obj, obj), args);
+		// 	// }
 
-			let result = yield env.createExecutionContext(fn.node.body, fn.node).execute();
-			return result && result.result;
-		});
+		// 	// let result = yield env.createExecutionContext(fn.node.body, fn.node).execute();
+		// 	// return result && result.result;
+		// });
 
 		return executionResult ? executionResult.getValue() : UNDEFINED;
 	}

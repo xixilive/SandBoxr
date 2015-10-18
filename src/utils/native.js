@@ -95,7 +95,7 @@ export function* toLength (env, obj) {
 }
 
 export function* toPropertyKey (env, key) {
-	if (key.isSymbol) {
+	if (key && key.isSymbol) {
 		return key;
 	}
 

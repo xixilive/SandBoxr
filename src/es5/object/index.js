@@ -87,10 +87,9 @@ export function* defineProperty (env, obj, name, descriptor, throwOnError = true
 
 export function* getOwnPropertyDescriptor (env, target, propertyKey) {
 	let key = yield toPropertyKey(env, propertyKey);
+	let descriptor = target.getOwnProperty(key);
 
-	if (target.owns(key)) {
-		let descriptor = target.getProperty(key);
-
+	if (descriptor) {
 		let result = env.objectFactory.createObject();
 		if (descriptor.dataProperty) {
 			result.putValue("value", descriptor.value, false, env);
@@ -246,12 +245,14 @@ export default function objectApi (env) {
 		let arr = objectFactory.create("Array");
 		let index = 0;
 
-		for (let name in obj.properties) {
-			if (obj.properties[name].enumerable) {
-				let value = objectFactory.createPrimitive(name);
-				arr.defineOwnProperty(index++, { configurable: true, enumerable: true, writable: true, value }, false, env);
+		obj.getOwnPropertyKeys().forEach(key => {
+			if (typeof key === "string") {
+				let propInfo = obj.getProperty(key);
+				if (propInfo && propInfo.enumerable) {
+					arr.putValue(index++, objectFactory.createPrimitive(key), true, env);
+				}
 			}
-		}
+		});
 
 		return arr;
 	}, 1, "Object.keys"));
@@ -317,7 +318,7 @@ export default function objectApi (env) {
 			return objectFactory.createPrimitive(false);
 		}
 
-		return objectFactory.createPrimitive(obj.extensible);
+		return objectFactory.createPrimitive(obj.isExtensible());
 	}, 1, "Object.isExtensible"));
 
 	objectClass.define("seal", objectFactory.createBuiltInFunction(function (obj) {

@@ -34,16 +34,16 @@ export class ObjectEnvironment {
 	createVariable (key, immutable) {
 		if (this.parent) {
 			return this.parent.createVariable(...arguments);
-		} else {
-			this.object.defineOwnProperty(key, {
-				value: undefined,
-				configurable: immutable,
-				enumerable: true,
-				writable: true
-			}, this.env.isStrict());
-
-			return this.object.getProperty(key);
 		}
+
+		this.object.defineOwnProperty(key, {
+			value: undefined,
+			configurable: immutable,
+			enumerable: true,
+			writable: true
+		}, this.env.isStrict());
+
+		return this.object.getProperty(key);
 	}
 
 	putValue (key, value, throwOnError) {

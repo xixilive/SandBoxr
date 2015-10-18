@@ -62,7 +62,7 @@ export class Scope {
 
 	*loadComplexArgs (params, args, callee) {
 		let env = this.env;
-		let strict = env.isStrict() || callee.isStrict();
+		let strict = env.isStrict() || contracts.isStrictNode(callee.node);
 
 		// create a temporary scope for the argument declarations
 		let scope = this.createParameterScope();
@@ -127,8 +127,8 @@ export class Scope {
 		// todo: this method is getting far too complex
 		let env = this.env;
 		let scope = this.scope;
-
-		let strict = env.isStrict() || callee.isStrict();
+		let strictCallee = contracts.isStrictNode(callee.node);
+		let strict = env.isStrict() || strictCallee;
 
 		let argumentList = env.objectFactory.createArguments(args, callee, strict);
 		scope.createVariable("arguments");
@@ -136,7 +136,7 @@ export class Scope {
 
 		let argsLength = args.length;
 		if (params) {
-			let shouldMap = !callee.isStrict();
+			let shouldMap = !strictCallee;
 
 			for (let i = 0, ln = params.length; i < ln; i++) {
 				let param = params[i];

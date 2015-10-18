@@ -15,9 +15,7 @@ export default function (env, proto) {
 			return result.value;
 		}
 
-		let obj = objectFactory.createObject();
-		obj.define("done", objectFactory.createPrimitive(result.done));
-		return obj;
+		return objectFactory.createIteratorResult({done: result.done});
 	}, 0, "ArrayIterator.prototype.next"));
 
 	function createIteratorValue (arr, index, kind) {
@@ -57,11 +55,7 @@ export default function (env, proto) {
 				value = createIteratorValue(arr, index, kind);
 			}
 
-			let result = objectFactory.createObject();
-			result.define("done", objectFactory.createPrimitive(done));
-			result.define("value", value);
-			yield result;
-
+			yield objectFactory.createIteratorResult({value, done});
 			index++;
 		}
 	}

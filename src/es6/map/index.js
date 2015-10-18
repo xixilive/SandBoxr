@@ -26,6 +26,7 @@ export default function (env) {
 	}
 
 	let objectFactory = env.objectFactory;
+	let proto = objectFactory.createObject();
 
 	let mapClass = objectFactory.createFunction(function* (iterable) {
 		if (!this.isNew) {
@@ -52,9 +53,7 @@ export default function (env) {
 		}
 
 		return obj;
-	});
-
-	let proto = mapClass.getValue("prototype");
+	}, proto);
 
 	proto.define("clear", objectFactory.createBuiltInFunction(function () {
 		assertIsMap(this.node, "Map.prototype.clear");
