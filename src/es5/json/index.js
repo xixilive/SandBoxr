@@ -82,7 +82,7 @@ function* serialize (env, stack, obj, replacer, gap, depth) {
 		return undefined;
 	}
 
-	let jsonString = yield tryExec(env, obj, "toJSON");
+	let jsonString = yield tryExec(obj, "toJSON");
 	if (jsonString) {
 		return serializePrimitive(jsonString.value);
 	}
@@ -121,11 +121,11 @@ function* createReplacer (env, replacer) {
 			let arr = yield toArray(env, replacer);
 			let keys = yield* map(arr, function* (arg) {
 				if (arg.className === "String") {
-					return yield toString(env, arg);
+					return yield toString(arg);
 				}
 
 				if (arg.className === "Number") {
-					return String(yield toNumber(env, arg));
+					return String(yield toNumber(arg));
 				}
 
 				return undefined;
@@ -148,7 +148,7 @@ function* createReplacer (env, replacer) {
 function* getSpacer (env, spacer) {
 	if (spacer) {
 		if (spacer.className === "Number") {
-			let count = Math.floor(yield toNumber(env, spacer));
+			let count = Math.floor(yield toNumber(spacer));
 			count = Math.max(Math.min(10, count), 0);
 
 			if (count > 0) {
@@ -159,7 +159,7 @@ function* getSpacer (env, spacer) {
 		}
 
 		if (spacer.className === "String") {
-			let gap = yield toString(env, spacer);
+			let gap = yield toString(spacer);
 			return gap.substr(0, 10);
 		}
 	}
@@ -247,7 +247,7 @@ export default function jsonApi (env) {
 	jsonClass.define("parse", objectFactory.createBuiltInFunction(function* (str, reviver) {
 		reviver = createReviver(env, reviver);
 
-		let stringValue = yield toString(env, str);
+		let stringValue = yield toString(str);
 		let parsedObject = JSON.parse(stringValue);
 		let deserializedObject = yield deserialize(env, parsedObject, reviver);
 

@@ -28,8 +28,8 @@ function setIndex (env, arr, name, descriptor, throwOnError) {
 }
 
 function* setLength (env, arr, name, descriptor, throwOnError) {
-	let newLengthValue = yield toUInt32(env, descriptor.value);
-	if (newLengthValue !== (yield toNumber(env, descriptor.value))) {
+	let newLengthValue = yield toUInt32(descriptor.value);
+	if (newLengthValue !== (yield toNumber(descriptor.value))) {
 		throw new RangeError("Array length out of range");
 	}
 
@@ -91,20 +91,23 @@ export class ArrayType extends ObjectType {
 		this.className = "Array";
 	}
 
-	init (objectFactory) {
-		this.defineOwnProperty("length", { value: objectFactory.createPrimitive(0), configurable: false, enumerable: false, writable: true });
+	init (env) {
+		super.init(...arguments);
+		this.defineOwnProperty("length", { value: env.objectFactory.createPrimitive(0), writable: true });
 	}
 
-	putValue (name, value, throwOnError, env) {
+	setValue (name, value) {
 		if (name === "length") {
-			x(setLength(env, this, name, { value }, throwOnError));
+			let env = this[Symbol.for("env")];
+			x(setLength(env, this, name, { value }));
 			return;
 		}
 
-		super.putValue(...arguments);
+		super.setValue(...arguments);
 	}
 
-	defineOwnProperty (name, descriptor, throwOnError, env) {
+	defineOwnProperty (name, descriptor, throwOnError) {
+		let env = this[Symbol.for("env")];
 		if (contracts.isInteger(name) && contracts.isValidArrayLength(Number(name) + 1) && !this.hasOwnProperty(name)) {
 			return setIndex(env, this, name, descriptor, throwOnError);
 		}

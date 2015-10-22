@@ -6,12 +6,13 @@ export class SetType extends ObjectType {
 		this.setData = [];
 	}
 
-	init (objectFactory) {
+	init (env) {
+		super.init(...arguments);
 		let self = this;
 
 		this.defineOwnProperty("size", {
 			getter () {
-				return objectFactory.createPrimitive(self.setData.length);
+				return env.objectFactory.createPrimitive(self.setData.length);
 			},
 			get () {}
 		});

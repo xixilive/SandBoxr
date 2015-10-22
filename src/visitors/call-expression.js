@@ -11,7 +11,8 @@ function assignThis (env, fnMember, fn, isNew, native) {
 	}
 
 	if (fnMember instanceof PropertyReference && (!fnMember.unqualified || fnMember.base !== env.global)) {
-		return toObject(env, fnMember.base);
+		return fnMember.base;
+		// return toObject(env, fnMember.base);
 	}
 
 	return null;
@@ -29,7 +30,7 @@ export default function* CallExpression (context) {
 	});
 
 	if (!fn || fn.className !== "Function") {
-		let stringValue = yield toString(context.env, fn);
+		let stringValue = yield toString(fn);
 		return context.raise(new TypeError(`${stringValue} not a function`));
 	}
 

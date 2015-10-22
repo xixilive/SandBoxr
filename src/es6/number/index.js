@@ -43,7 +43,7 @@ export default function (env) {
 			return objectFactory.createPrimitive(false);
 		}
 
-		let intValue = yield toInteger(env, value);
+		let intValue = yield toInteger(value);
 		return objectFactory.createPrimitive(numberValue === intValue);
 	}, 1, "Number.isInteger"));
 
@@ -57,7 +57,7 @@ export default function (env) {
 			return objectFactory.createPrimitive(false);
 		}
 
-		let intValue = yield toInteger(env, value);
+		let intValue = yield toInteger(value);
 		if (intValue !== numberValue) {
 			return objectFactory.createPrimitive(false);
 		}
@@ -66,13 +66,13 @@ export default function (env) {
 	}, 1, "Number.isSafeInteger"));
 
 	numberClass.define("parseFloat", objectFactory.createBuiltInFunction(function* (value) {
-		let stringValue = yield toString(env, value);
+		let stringValue = yield toString(value);
 		return objectFactory.createPrimitive(parseFloat(stringValue));
 	}, 1, "Number.parseFloat"));
 
 	numberClass.define("parseInt", objectFactory.createBuiltInFunction(function* (value, radix) {
-		let stringValue = yield toString(env, value);
-		radix = yield toPrimitive(env, radix, "number");
+		let stringValue = yield toString(value);
+		radix = yield toPrimitive(radix, "number");
 		return objectFactory.createPrimitive(parseInt(stringValue, radix));
 	}, 2, "Number.parseInt"));
 

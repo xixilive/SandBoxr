@@ -6,14 +6,15 @@ export class StringType extends PrimitiveType {
 		super(value);
 	}
 
-	init (objectFactory) {
+	init (env) {
+		super.init(...arguments);
 		let length = this.value.length;
 
 		this.properties.length = new PropertyDescriptor(this, {
 			configurable: false,
 			enumerable: false,
 			writable: false,
-			value: objectFactory.createPrimitive(length)
+			value: env.objectFactory.createPrimitive(length)
 		});
 
 		// todo: do this lazily

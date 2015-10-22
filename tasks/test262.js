@@ -57,10 +57,11 @@ gulp.task("test262-6", function () {
 	//	- Date -8
 	//	- undefined +
 	//	- Symbol -2
-	//	- String -8
+	//	- String -2
 	//	- Error +
+	//	- Proxy +
 
-	return streamer6({ files: ["/built-ins/proxy/**/*.js"] })
+	return streamer6({ files: ["/built-ins/object/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 

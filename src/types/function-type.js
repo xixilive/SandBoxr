@@ -27,18 +27,19 @@ export class FunctionType extends ObjectType {
 		this.boundThis = null;
 	}
 
-	init (objectFactory, proto, descriptor, strict) {
+	init (env, proto, descriptor, strict) {
+		super.init(...arguments);
+
 		if (strict !== undefined) {
 			this.strict = strict;
 		}
 
 		// set length property from the number of parameters
-		this.defineOwnProperty("length", { value: objectFactory.createPrimitive(getParameterLength(this.node.params)) });
-		this.initStrict(objectFactory);
+		this.defineOwnProperty("length", { value: env.objectFactory.createPrimitive(getParameterLength(this.node.params)) });
 
 		if (!this.arrow) {
 			// functions have a prototype
-			proto = proto || objectFactory.createObject();
+			proto = proto || env.objectFactory.createObject();
 			this.defineOwnProperty("prototype", { value: proto, writable: true });
 
 			// set the contructor property as an instance of itself
@@ -46,19 +47,11 @@ export class FunctionType extends ObjectType {
 		}
 	}
 
-	initStrict (objectFactory) {
-		// if (this.isStrict()) {
-		// 	let throwerProps = objectFactory.createThrower("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
-		// 	this.defineOwnProperty("caller", throwerProps);
-		// 	this.defineOwnProperty("arguments", throwerProps);
-		// } else {
-		// 	this.defineOwnProperty("caller", { value: objectFactory.createPrimitive(undefined) });
-		// }
-	}
-
-	*call (env, thisArg, args, callee) {
+	*call (thisArg, args, callee) {
 		let self = this;
+		let env = this[Symbol.for("env")];
 		let scope = env.createExecutionScope(this, thisArg);
+
 		yield scope.loadArgs(this.node.params, args, this);
 		scope.init(this.node && this.node.body);
 
@@ -74,9 +67,9 @@ export class FunctionType extends ObjectType {
 		});
 	}
 
-	*construct (env, thisArg, args, callee) {
-		thisArg = env.objectFactory.createObject(this);
-		let result = yield this.call(env, thisArg, args, callee);
+	*construct (thisArg, args, callee) {
+		thisArg = this[Symbol.for("env")].objectFactory.createObject(this);
+		let result = yield this.call(thisArg, args, callee);
 		if (result && !result.isPrimitive) {
 			return result;
 		}

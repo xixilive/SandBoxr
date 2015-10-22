@@ -23,7 +23,7 @@ export default function (env) {
 		if (iterable) {
 			let length = iterable.getValue("length").toNative();
 			for (let entry of iterate.forward(env, iterable, 0, length)) {
-				if ((yield tryExec(env, obj, "add", [entry.value])) === false) {
+				if ((yield tryExec(obj, "add", [entry.value])) === false) {
 					throw new TypeError("Property 'add' of object #<Set> is not a function");
 				}
 			}

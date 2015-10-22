@@ -151,7 +151,7 @@ export class ObjectFactory {
 				throw new Error("Not a primitive: " + value);
 		}
 
-		instance.init(this);
+		instance.init(this.env);
 		setProto(typeName, instance, this.env);
 		return instance;
 	}
@@ -191,7 +191,7 @@ export class ObjectFactory {
 			}
 		}
 
-		instance.init(this);
+		instance.init(this.env);
 		return instance;
 	}
 
@@ -216,7 +216,7 @@ export class ObjectFactory {
 		let instance = new ArgumentType();
 		let objectClass = this.env.global.getValue("Object");
 
-		instance.init(this, objectClass, objectClass.getPrototype());
+		instance.init(this.env, objectClass, objectClass.getPrototype());
 		instance.setPrototype(objectClass.getValue("prototype"));
 
 		if (strict) {
@@ -280,7 +280,7 @@ export class ObjectFactory {
 			instance = new FunctionType(fnOrNode);
 		}
 
-		instance.init(this, proto, { configurable, enumerable, writable }, strict);
+		instance.init(this.env, proto, { configurable, enumerable, writable }, strict);
 		instance.name = name;
 
 		if (this.options.ecmaVersion > 5) {
@@ -316,6 +316,7 @@ export class ObjectFactory {
 		});
 
 		setProto("Function", instance, this.env);
+		instance[Symbol.for("env")] = this.env;
 		instance.builtIn = true;
 		instance.defineOwnProperty("length", { value: this.createPrimitive(length), configurable: true });
 

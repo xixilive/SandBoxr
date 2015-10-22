@@ -59,19 +59,19 @@ export default function (env) {
 
 	reflectClass.define("defineProperty", objectFactory.createBuiltInFunction(function* (target, propertyKey, descriptor) {
 		contracts.assertIsObject(target, "Reflect.defineProperty");
-		let key = yield toPropertyKey(env, propertyKey);
+		let key = yield toPropertyKey(propertyKey);
 		return objectFactory.createPrimitive(yield defineProperty(env, target, key, descriptor, false));
 	}, 3, "Reflect.defineProperty"));
 
 	reflectClass.define("deleteProperty", objectFactory.createBuiltInFunction(function* (target, propertyKey) {
 		contracts.assertIsObject(target, "Reflect.deleteProperty");
-		let key = yield toPropertyKey(env, propertyKey);
+		let key = yield toPropertyKey(propertyKey);
 		return objectFactory.createPrimitive(target.deleteProperty(key, false));
 	}, 2, "Reflect.deleteProperty"));
 
 	reflectClass.define("get", objectFactory.createBuiltInFunction(function* (target, propertyKey, receiver) {
 		contracts.assertIsObject(target, "Reflect.get");
-		let key = yield toPropertyKey(env, propertyKey);
+		let key = yield toPropertyKey(propertyKey);
 
 		let property = target.getProperty(key);
 		if (property) {
@@ -94,7 +94,7 @@ export default function (env) {
 
 	reflectClass.define("has", objectFactory.createBuiltInFunction(function* (target, propertyKey) {
 		contracts.assertIsObject(target, "Reflect.has");
-		let key = yield toPropertyKey(env, propertyKey);
+		let key = yield toPropertyKey(propertyKey);
 		return objectFactory.createPrimitive(target.has(key));
 	}, 2, "Reflect.has"));
 
@@ -128,7 +128,7 @@ export default function (env) {
 
 	reflectClass.define("set", objectFactory.createBuiltInFunction(function* (target, key, value, receiver) {
 		contracts.assertIsObject(target, "Reflect.set");
-		let k = yield toPropertyKey(env, key);
+		let k = yield toPropertyKey(key);
 
 		if (contracts.isUndefined(receiver)) {
 			receiver = target;

@@ -16,8 +16,8 @@ function buildTemplateObject (env, node) {
 	let quasis = node.quasis;
 
 	for (let i = 0, ln = quasis.length; i < ln; i++) {
-		tag.putValue(i, objectFactory.createPrimitive(quasis[i].value.cooked), true, env);
-		raw.putValue(i, objectFactory.createPrimitive(quasis[i].value.raw), true, env);
+		tag.setValue(i, objectFactory.createPrimitive(quasis[i].value.cooked));
+		raw.setValue(i, objectFactory.createPrimitive(quasis[i].value.raw));
 	}
 
 	raw.freeze();

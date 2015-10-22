@@ -37,7 +37,7 @@ export default function* ObjectExpression (context) {
 
 		if (property.computed) {
 			let keyValue = (yield context.create(property.key).execute()).result.getValue();
-			key = yield toPropertyKey(context.env, keyValue);
+			key = yield toPropertyKey(keyValue);
 		} else {
 			key = property.key.name || property.key.value;
 		}

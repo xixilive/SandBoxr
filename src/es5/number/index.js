@@ -13,7 +13,7 @@ export default function numberApi (env) {
 	proto.value = 0;
 
 	let numberClass = objectFactory.createFunction(function* (obj) {
-		let numberValue = Number(yield toPrimitive(env, obj, "number"));
+		let numberValue = Number(yield toPrimitive(obj, "number"));
 
 		if (this.isNew) {
 			return primitiveToObject(env, numberValue);
@@ -27,7 +27,7 @@ export default function numberApi (env) {
 
 		let radixValue = 10;
 		if (radix) {
-			radixValue = yield toPrimitive(env, radix, "number");
+			radixValue = yield toPrimitive(radix, "number");
 			if (radixValue < 2 || radixValue > 36) {
 				return this.raise(new RangeError("toString() radix argument must be between 2 and 36"));
 			}
@@ -41,7 +41,7 @@ export default function numberApi (env) {
 
 		let digits = 0;
 		if (fractionDigits) {
-			digits = yield toNumber(env, fractionDigits);
+			digits = yield toNumber(fractionDigits);
 		}
 
 		return objectFactory.createPrimitive(Number.prototype.toFixed.call(this.node.value, digits));

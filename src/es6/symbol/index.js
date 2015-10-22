@@ -12,12 +12,12 @@ export default function (env) {
 			throw new TypeError("Symbol is not a constructor");
 		}
 
-		let descString = yield toString(env, desc);
+		let descString = yield toString(desc);
 		return objectFactory.create("Symbol", descString);
 	});
 
 	symbolClass.define("for", objectFactory.createBuiltInFunction(function* (key) {
-		let keyString = yield toString(env, key);
+		let keyString = yield toString(key);
 
 		let instance = SymbolType.getByKey(keyString);
 		if (instance) {

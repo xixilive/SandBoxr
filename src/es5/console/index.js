@@ -10,7 +10,7 @@ export default function consoleApi (env) {
 
 	methods.forEach(name => {
 		consoleClass.define(name, objectFactory.createBuiltInFunction(function* (...args) {
-			let stringValues = yield map(args, function* (arg) { return yield toString(env, arg); });
+			let stringValues = yield map(args, function* (arg) { return yield toString(arg); });
 			console[name](...stringValues);
 		}, 1, `console.${name}`));
 	});

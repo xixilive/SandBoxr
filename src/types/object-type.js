@@ -46,7 +46,9 @@ export class ObjectType {
 		this.primitiveHint = "number";
 	}
 
-	init (objectFactory, proto, descriptor) { }
+	init (env, proto, descriptor, strict) {
+		this[Symbol.for("env")] = env;
+	}
 
 	getPrototype () {
 		return this.proto;
@@ -101,7 +103,8 @@ export class ObjectType {
 		return this.extensible;
 	}
 
-	getIterator (env) {
+	getIterator () {
+		let env = this[Symbol.for("env")];
 		return env.objectFactory.createIterator(propertyIterator(env, this));
 	}
 
@@ -165,7 +168,7 @@ export class ObjectType {
 		}, false);
 	}
 
-	putValue (key, value, throwOnError, env) {
+	putValue (key, value, throwOnError) {
 		if (this.isPrimitive) {
 			return;
 		}
@@ -174,7 +177,7 @@ export class ObjectType {
 		if (descriptor) {
 			if (!descriptor.canSetValue()) {
 				if (throwOnError) {
-					throw new TypeError(`Cannot assign to read only property '${key}' of %s`);
+					throw new TypeError(`Cannot assign to read only property '${key}'`);
 				}
 
 				return;
@@ -193,11 +196,11 @@ export class ObjectType {
 				descriptor.setValue(value);
 			}
 		} else {
-			this.defineOwnProperty(key, { value: value, configurable: true, enumerable: true, writable: true }, throwOnError, env);
+			this.defineOwnProperty(key, { value: value, configurable: true, enumerable: true, writable: true }, throwOnError);
 		}
 	}
 
-	defineOwnProperty (key, descriptor, throwOnError, env) {
+	defineOwnProperty (key, descriptor, throwOnError) {
 		if (this.isPrimitive) {
 			if (throwOnError) {
 				throw new TypeError(`Cannot define property: ${key}, object is not extensible`);
@@ -284,14 +287,22 @@ export class ObjectType {
 		return this;
 	}
 
-	freeze () {
-		for (let prop in this.properties) {
-			if (this.properties[prop].dataProperty) {
-				this.defineOwnProperty(prop, { writable: false, configurable: false }, true);
-			} else {
-				this.defineOwnProperty(prop, { configurable: false }, true);
+	each (func) {
+		["properties", "symbols"].forEach(source => {
+			for (let key in this[source]) {
+				func(this[source][key]);
 			}
-		}
+		});
+	}
+
+	freeze () {
+		this.each(this, desc => {
+			if (desc.dataProperty) {
+				this.defineOwnProperty(desc.key, { writable: false, configurable: false });
+			} else {
+				this.defineOwnProperty(desc.key, { configurable: false });
+			}
+		});
 
 		this.preventExtensions();
 	}
@@ -302,9 +313,9 @@ export class ObjectType {
 	}
 
 	seal () {
-		for (let prop in this.properties) {
-			this.defineOwnProperty(prop, { configurable: false }, true);
-		}
+		this.each(this, desc => {
+			this.defineOwnProperty(desc.key, { configurable: false }, true);
+		});
 
 		this.preventExtensions();
 	}

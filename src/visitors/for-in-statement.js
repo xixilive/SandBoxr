@@ -20,7 +20,7 @@ export default function* ForInStatement (context) {
 	let result, priorResult;
 
 	while (!done) {
-		let itResult = yield next.call(context.env, it, []);
+		let itResult = yield next.call(it, []);
 		done = toBoolean(itResult.getValue("done"));
 
 		if (!done && itResult.has("value")) {

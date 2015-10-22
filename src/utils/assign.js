@@ -72,7 +72,7 @@ function* getObjectKey (env, keyNode) {
 			return key;
 		}
 
-		return yield toString(env, key);
+		return yield toString(key);
 	}
 
 	return keyNode.name;

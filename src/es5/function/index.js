@@ -39,13 +39,13 @@ export default function functionApi (env) {
 						throw new SyntaxError("Unexpected token null");
 					}
 
-					return contracts.isUndefined(arg) ? "" : (yield toString(env, arg));
+					return contracts.isUndefined(arg) ? "" : (yield toString(arg));
 				}))
 				// the spec allows parameters to be comma-delimited, so we will join and split again comma
 				.join(",");
 			}
 
-			let bodyString = yield toString(env, body);
+			let bodyString = yield toString(body);
 			let ast = options.parser(`(function(${params}){${bodyString}}).apply($this,$args);`);
 			let callee = ast.body[0].expression.callee.object;
 			let userNode = callee.body.body;
@@ -85,7 +85,7 @@ export default function functionApi (env) {
 			funcInstance = objectFactory.createFunction(function () {});
 		}
 
-		funcInstance.putValue("constructor", funcClass);
+		funcInstance.setValue("constructor", funcClass);
 		return funcInstance;
 	};
 
@@ -100,7 +100,7 @@ export default function functionApi (env) {
 
 	funcCtor.nativeLength = 1;
 	funcClass = objectFactory.createFunction(funcCtor, proto, frozen);
-	funcClass.putValue("constructor", funcClass);
+	funcClass.setValue("constructor", funcClass);
 
 	globalObject.define("Function", funcClass);
 

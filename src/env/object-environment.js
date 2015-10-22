@@ -46,11 +46,11 @@ export class ObjectEnvironment {
 		return this.object.getProperty(key);
 	}
 
-	putValue (key, value, throwOnError) {
+	setValue (key, value, throwOnError) {
 		if (this.parent && !this.object.has(key)) {
-			this.parent.putValue(...arguments);
+			this.parent.setValue(...arguments);
 		} else {
-			this.object.putValue(key, value, throwOnError);
+			this.object.setValue(key, value, throwOnError);
 		}
 	}
 

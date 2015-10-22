@@ -42,7 +42,7 @@ export default function (env, proto) {
 	let iteratorKey = SymbolType.getByKey("iterator");
 	proto.define(iteratorKey, objectFactory.createBuiltInFunction(function* () {
 		contracts.assertIsNotNullOrUndefined(this.node, "String.protoype[Symbol.iterator]");
-		let stringValue = yield toString(env, this.node);
+		let stringValue = yield toString(this.node);
 		let it = getIterator(stringValue);
 		return objectFactory.createIterator(it, iteratorProto);
 	}, 0, "[Symbol.iterator]"));

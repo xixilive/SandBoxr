@@ -8,26 +8,24 @@ import proxyAPI from "./proxy/";
 import setAPI from "./set/";
 import mapAPI from "./map/";
 import reflectAPI from "./reflect/";
+import regexAPI from "./regex/";
 import {SymbolType} from "../types/symbol-type";
 
 export default function (env) {
 	ecma5(env);
 	symbolAPI(env);
-
-	let objectFactory = env.objectFactory;
-	let globalObject = env.global;
-
-	let boolProto = env.global.getValue("Boolean").getValue("prototype");
-	boolProto.className = "Object";
-
 	objectAPI(env);
 	numberAPI(env);
 	stringAPI(env);
 	arrayAPI(env);
+	regexAPI(env);
 	setAPI(env);
 	mapAPI(env);
 	proxyAPI(env);
-	
+
+	let objectFactory = env.objectFactory;
+	let globalObject = env.global;
+
 	// setup class symbols
 	let stringTagKey = SymbolType.getByKey("toStringTag");
 	let speciesKey = SymbolType.getByKey("species");

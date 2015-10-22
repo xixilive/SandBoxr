@@ -22,15 +22,15 @@ export default function dateApi (env) {
 			if (p1.isPrimitive) {
 				args = [p1.value];
 			} else {
-				let primitiveValue = yield toPrimitive(env, p1);
+				let primitiveValue = yield toPrimitive(p1);
 				if (typeof primitiveValue !== "string") {
-					primitiveValue = yield toNumber(env, p1);
+					primitiveValue = yield toNumber(p1);
 				}
 
 				args = [primitiveValue];
 			}
 		} else {
-			args = yield* map(arguments, function* (arg) { return yield toPrimitive(env, arg, "number"); });
+			args = yield* map(arguments, function* (arg) { return yield toPrimitive(arg, "number"); });
 		}
 
 		if (this.isNew) {
@@ -62,13 +62,13 @@ export default function dateApi (env) {
 	}, proto, { configurable: false, enumerable: false, writable: false });
 
 	dateClass.define("parse", objectFactory.createBuiltInFunction(function* (value) {
-		let stringValue = yield toPrimitive(env, value, "string");
+		let stringValue = yield toPrimitive(value, "string");
 		let dateValue = Date.parse(stringValue);
 		return objectFactory.createPrimitive(dateValue);
 	}, 1, "Date.prototype.parse"));
 
 	dateClass.define("UTC", objectFactory.createBuiltInFunction(function* () {
-		let args = yield* map(arguments, function* (arg) { return yield toPrimitive(env, arg, "number"); });
+		let args = yield* map(arguments, function* (arg) { return yield toPrimitive(arg, "number"); });
 		return objectFactory.createPrimitive(Date.UTC.apply(null, args));
 	}, 7, "Date.prototype.UTC"));
 
@@ -82,7 +82,7 @@ export default function dateApi (env) {
 
 	setters.forEach(name => {
 		function* setter () {
-			let args = yield* map(arguments, function* (arg) { return yield toPrimitive(env, arg); });
+			let args = yield* map(arguments, function* (arg) { return yield toPrimitive(arg); });
 			Date.prototype[name].apply(this.node.value, args);
 		}
 

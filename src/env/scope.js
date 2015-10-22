@@ -76,10 +76,10 @@ export class Scope {
 				let restIndex = 0;
 
 				while (argIndex < argLength) {
-					rest.putValue(restIndex++, args[argIndex++] || UNDEFINED, true, env);
+					rest.setValue(restIndex++, args[argIndex++] || UNDEFINED);
 				}
 
-				scope.putValue(param.name, rest, true, env);
+				scope.setValue(param.name, rest);
 			} else {
 				yield declare(env, param, args[argIndex++] || UNDEFINED, true);
 			}
@@ -89,7 +89,7 @@ export class Scope {
 			// preserve the passed in arguments, even if defaults are used instead
 			let argumentList = env.objectFactory.createArguments(args, callee, strict);
 			scope.createVariable("arguments");
-			scope.putValue("arguments", argumentList);
+			scope.setValue("arguments", argumentList);
 
 			args.forEach(function (value, index) {
 				argumentList.defineOwnProperty(index, {
@@ -132,7 +132,7 @@ export class Scope {
 
 		let argumentList = env.objectFactory.createArguments(args, callee, strict);
 		scope.createVariable("arguments");
-		scope.putValue("arguments", argumentList);
+		scope.setValue("arguments", argumentList);
 
 		let argsLength = args.length;
 		if (params) {
@@ -160,7 +160,7 @@ export class Scope {
 				}
 
 				contracts.assertIsValidParameterName(name, strict);
-				scope.putValue(name, value, true, env);
+				scope.setValue(name, value);
 			}
 		}
 

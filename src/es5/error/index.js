@@ -15,7 +15,7 @@ export default function errorApi (env) {
 	let errorClass = objectFactory.createFunction(function* (message) {
 		let messageString;
 		if (!contracts.isNullOrUndefined(message)) {
-			messageString = yield toString(env, message);
+			messageString = yield toString(message);
 		}
 
 		return objectFactory.create("Error", new Error(messageString));
@@ -26,10 +26,10 @@ export default function errorApi (env) {
 		let msg;
 
 		if (this.node.has("message")) {
-			msg = yield toString(env, this.node.getValue("message"));
+			msg = yield toString(this.node.getValue("message"));
 		}
 
-		name = name && (yield toString(env, name));
+		name = name && (yield toString(name));
 		if (name && msg) {
 			return objectFactory.create("String", name + ": " + msg);
 		}
@@ -45,9 +45,9 @@ export default function errorApi (env) {
 
 		// add to prototype chain to represent inheritance
 		typeProto.setPrototype(proto);
-		
+
 		let errClass = objectFactory.createFunction(function* (message) {
-			let messageString = yield toString(env, message);
+			let messageString = yield toString(message);
 			let nativeError = new global[errorType](messageString);
 			return objectFactory.create(errorType, nativeError);
 		}, typeProto, { configurable: false, enumerable: false, writable: false });

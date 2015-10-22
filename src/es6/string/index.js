@@ -10,7 +10,7 @@ export default function (env) {
 	let proto = stringClass.getValue("prototype");
 
 	stringClass.define("fromCodePoint", objectFactory.createBuiltInFunction(function* (...codePoints) {
-		let args = yield map(codePoints, function* (cp) { return yield toNumber(env, cp); });
+		let args = yield map(codePoints, function* (cp) { return yield toNumber(cp); });
 		return objectFactory.createPrimitive(String.fromCodePoint(...args));
 	}, 1, "String.fromCodePoint"));
 
@@ -28,7 +28,7 @@ export default function (env) {
 		let nextIndex = 0;
 
 		while (nextIndex < literalSegments) {
-			let nextSegment = yield toString(env, raw.getValue(nextIndex));
+			let nextSegment = yield toString(raw.getValue(nextIndex));
 			stringElements.push(nextSegment);
 
 			if (nextIndex + 1 === literalSegments) {
@@ -37,7 +37,7 @@ export default function (env) {
 
 			let next = "";
 			if (nextIndex < numberOfSubstitutions) {
-				next = yield toString(env, substitutions[nextIndex]);
+				next = yield toString(substitutions[nextIndex]);
 			}
 
 			stringElements.push(next);
@@ -49,8 +49,8 @@ export default function (env) {
 
 	proto.define("codePointAt", objectFactory.createBuiltInFunction(function* (pos) {
 		contracts.assertIsNotNullOrUndefined(this.node, "String.prototype.codePointAt");
-		let stringValue = yield toString(env, this.node);
-		let position = yield toInteger(env, pos);
+		let stringValue = yield toString(this.node);
+		let position = yield toInteger(pos);
 
 		if (position < 0 || position >= stringValue.length) {
 			return UNDEFINED;
@@ -73,15 +73,15 @@ export default function (env) {
 
 	proto.define("endsWith", objectFactory.createBuiltInFunction(function* (searchString, endPosition) {
 		contracts.assertIsNotNullOrUndefined(this.node, "String.prototype.endsWith");
-		let stringValue = yield toString(env, this.node);
+		let stringValue = yield toString(this.node);
 		if (contracts.isRegExp(searchString)) {
 			throw new TypeError("First argument to String.prototype.endsWith must not be a regular expression");
 		}
 
-		let searchValue = yield toString(env, searchString);
+		let searchValue = yield toString(searchString);
 		let end = stringValue.length;
 		if (!contracts.isUndefined(endPosition)) {
-			end = yield toInteger(env, endPosition);
+			end = yield toInteger(endPosition);
 		}
 
 		end = Math.min(Math.max(end, 0), stringValue.length);
@@ -90,27 +90,28 @@ export default function (env) {
 
 	proto.define("startsWith", objectFactory.createBuiltInFunction(function* (searchString, startPosition) {
 		contracts.assertIsNotNullOrUndefined(this.node, "String.prototype.startsWith");
-		let stringValue = yield toString(env, this.node);
+		let stringValue = yield toString(this.node);
 		if (contracts.isRegExp(searchString)) {
 			throw new TypeError("First argument to String.prototype.startsWith must not be a regular expression");
 		}
 
-		let searchValue = yield toString(env, searchString);
-		let start = yield toInteger(env, startPosition);
+		let searchValue = yield toString(searchString);
+		let start = yield toInteger(startPosition);
+		start = Math.max(start, 0);
 		return objectFactory.createPrimitive(stringIncludes(stringValue, searchValue, start, start + searchValue.length));
 	}, 1, "String.prototype.startsWith"));
 
 	proto.define("includes", objectFactory.createBuiltInFunction(function* (searchString, position) {
 		contracts.assertIsNotNullOrUndefined(this.node, "String.prototype.includes");
-		let stringValue = yield toString(env, this.node);
+		let stringValue = yield toString(this.node);
 		if (contracts.isRegExp(searchString)) {
 			throw new TypeError("First argument to String.prototype.includes must not be a regular expression");
 		}
 
-		let searchValue = yield toString(env, searchString);
+		let searchValue = yield toString(searchString);
 		let length = stringValue.length;
 
-		let start = yield toInteger(env, position);
+		let start = yield toInteger(position);
 		start = Math.min(Math.max(start, 0), length);
 
 		let end = start + searchValue.length;
@@ -128,8 +129,8 @@ export default function (env) {
 
 	proto.define("repeat", objectFactory.createBuiltInFunction(function* (count) {
 		contracts.assertIsNotNullOrUndefined(this.node, "String.prototype.repeat");
-		let stringValue = yield toString(env, this.node);
-		let countValue = yield toInteger(env, count);
+		let stringValue = yield toString(this.node);
+		let countValue = yield toInteger(count);
 		if (countValue < 0 || !isFinite(countValue)) {
 			throw new RangeError("Invalid count value");
 		}
@@ -151,12 +152,12 @@ export default function (env) {
 
 	proto.define("normalize", objectFactory.createBuiltInFunction(function* (form) {
 		contracts.assertIsNotNullOrUndefined(this.node, "String.prototype.normalize");
-		let stringValue = yield toString(env, this.node);
+		let stringValue = yield toString(this.node);
 
 		let formValue = "NFC";
 		if (!contracts.isUndefined(form)) {
 			// valid forms
-			formValue = yield toString(env, form);
+			formValue = yield toString(form);
 
 			if (!(/^NFK?(?:C|D)$/).test(formValue)) {
 				throw new RangeError();

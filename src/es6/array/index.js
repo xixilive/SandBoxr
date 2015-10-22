@@ -62,7 +62,7 @@ export default function (env) {
 
 				if (!done) {
 					let value = yield mapper(current.value || UNDEFINED, index);
-					target.putValue(index++, value, true, env);
+					target.setValue(index++, value);
 				}
 			} catch (err) {
 				if ("return" in it) {
@@ -73,7 +73,7 @@ export default function (env) {
 			}
 		}
 
-		target.putValue("length", objectFactory.createPrimitive(index), true, env);
+		target.setValue("length", objectFactory.createPrimitive(index), true, env);
 		return target;
 	}, 1, "Array.from"));
 
@@ -92,16 +92,16 @@ export default function (env) {
 			i++;
 		}
 
-		arr.putValue("length", lengthValue, true, env);
+		arr.setValue("length", lengthValue, true, env);
 		return arr;
 	}, 0, "Array.of"));
 
 	proto.define("copyWithin", objectFactory.createBuiltInFunction(function* (target, start, end) {
 		let arr = toObject(env, this.node);
 		let length = yield toLength(env, arr);
-		let to = normalizeIndex(yield toInteger(env, target), length);
-		let from = normalizeIndex(yield toInteger(env, start), length);
-		let final = contracts.isUndefined(end) ? length : normalizeIndex(yield toInteger(env, end), length);
+		let to = normalizeIndex(yield toInteger(target), length);
+		let from = normalizeIndex(yield toInteger(start), length);
+		let final = contracts.isUndefined(end) ? length : normalizeIndex(yield toInteger(end), length);
 
 		let count = Math.min(final - from, length - to);
 		let dir = 1;
@@ -115,7 +115,7 @@ export default function (env) {
 		while (count > 0) {
 			let current = arr.getProperty(from);
 			if (current) {
-				arr.putValue(to, current.getValue(), true, env);
+				arr.setValue(to, current.getValue(), true, env);
 			} else {
 				arr.deleteProperty(to);
 			}
@@ -131,14 +131,14 @@ export default function (env) {
 	proto.define("fill", objectFactory.createBuiltInFunction(function* (value, start, end) {
 		let arr = toObject(env, this.node);
 		let length = yield toLength(env, arr);
-		let k = start ? (yield toInteger(env, start)) : 0;
-		let final = contracts.isUndefined(end) ? length : (yield toInteger(env, end));
+		let k = start ? (yield toInteger(start)) : 0;
+		let final = contracts.isUndefined(end) ? length : (yield toInteger(end));
 
 		k = normalizeIndex(k, length);
 		final = normalizeIndex(final, length);
 
 		while (k < final) {
-			arr.putValue(k++, value, true, env);
+			arr.setValue(k++, value, true, env);
 		}
 
 		return arr;

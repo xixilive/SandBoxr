@@ -54,7 +54,7 @@ export class DeclarativeEnvironment {
 		});
 	}
 
-	putValue (key, value, throwOnError) {
+	setValue (key, value, throwOnError) {
 		if (this.has(key)) {
 			if (!this.properties[key].writable) {
 				if (throwOnError) {
@@ -66,7 +66,7 @@ export class DeclarativeEnvironment {
 
 			this.properties[key].setValue(value);
 		} else {
-			this.parent.putValue(...arguments);
+			this.parent.setValue(...arguments);
 		}
 	}
 

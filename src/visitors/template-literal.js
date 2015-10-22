@@ -4,7 +4,7 @@ import {toString} from "../utils/native";
 export default function* TemplateLiteral (context) {
 	let values = yield map(context.node.expressions, function* (expr) {
 		let value = yield context.create(expr).execute();
-		return yield toString(context.env, value.result.getValue());
+		return yield toString(value.result.getValue());
 	});
 
 	let result = [];

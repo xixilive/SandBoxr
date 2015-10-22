@@ -2,7 +2,7 @@ import {UNDEFINED} from "../types/primitive-type";
 
 export function* execute (env, fn, args, thisArg, callee, isNew) {
 	callee = callee || fn;
-	let returnResult = yield fn[isNew ? "construct" : "call"](env, thisArg, args, callee);
+	let returnResult = yield fn[isNew ? "construct" : "call"](thisArg, args, callee);
 
 	// // let f = fn.node || fn;
 	// // let params = f.params || [];
@@ -45,7 +45,7 @@ export function* construct (env, fn, args = []) {
 }
 
 export function* call (env, fn, params, args, thisArg, callee) {
-	return yield fn.call(env, thisArg, args, callee);
+	return yield fn.call(thisArg, args, callee);
 	// let scope = env.createExecutionScope(fn, thisArg);
 	// yield scope.loadArgs(params, args, fn);
 	// scope.init(fn.node && fn.node.body);
@@ -60,7 +60,7 @@ export function* call (env, fn, params, args, thisArg, callee) {
 	// });
 }
 
-export function* tryExecute (env, obj, name, args = []) {
+export function* tryExecute (obj, name, args = []) {
 	let fn = obj.getProperty(name);
 	if (!fn) {
 		return false;
@@ -69,7 +69,7 @@ export function* tryExecute (env, obj, name, args = []) {
 	fn = fn.getValue();
 
 	if (fn && fn.className === "Function") {
-		let executionResult = yield fn.call(env, obj, args, fn);
+		let executionResult = yield fn.call(obj, args, fn);
 		// let scope = env.createExecutionScope(fn, obj);
 		// yield scope.loadArgs(fn.node && fn.node.params, args, fn);
 		// scope.init(fn.node && fn.node.body);

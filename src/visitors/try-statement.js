@@ -36,7 +36,7 @@ export default function* TryStatement (context) {
 
 			let scope = context.env.createScope();
 			context.env.createVariable(errVar);
-			context.env.putValue(errVar, result.result);
+			context.env.setValue(errVar, result.result);
 
 			result = yield scope.use(function* () {
 				return yield executeBlock(context, context.node.handler.body.body, true);

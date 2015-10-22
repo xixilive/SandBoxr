@@ -6,7 +6,7 @@ const floor = Math.floor;
 const abs = Math.abs;
 const MAX_LENGTH = Math.pow(2, 53) - 1;
 
-function* getString (env, value) {
+function* getString (value) {
 	if (!value) {
 		return "undefined";
 	}
@@ -15,12 +15,12 @@ function* getString (env, value) {
 		return String(value.toNative());
 	}
 
-	let primitiveValue = yield tryExec(env, value, "toString");
+	let primitiveValue = yield tryExec(value, "toString");
 	if (primitiveValue && primitiveValue.isPrimitive) {
 		return String(primitiveValue.value);
 	}
 
-	primitiveValue = yield tryExec(env, value, "valueOf");
+	primitiveValue = yield tryExec(value, "valueOf");
 	if (primitiveValue && primitiveValue.isPrimitive) {
 		return String(primitiveValue.value);
 	}
@@ -28,7 +28,7 @@ function* getString (env, value) {
 	throw new TypeError("Cannot convert object to primitive value.");
 }
 
-function* getPrimitive (env, value) {
+function* getPrimitive (value) {
 	if (!value) {
 		return 0;
 	}
@@ -37,12 +37,12 @@ function* getPrimitive (env, value) {
 		return value.toNative();
 	}
 
-	let primitiveValue = yield tryExec(env, value, "valueOf");
+	let primitiveValue = yield tryExec(value, "valueOf");
 	if (primitiveValue && primitiveValue.isPrimitive) {
 		return primitiveValue.toNative();
 	}
 
-	primitiveValue = yield tryExec(env, value, "toString");
+	primitiveValue = yield tryExec(value, "toString");
 	if (primitiveValue && primitiveValue.isPrimitive) {
 		return primitiveValue.toNative();
 	}
@@ -50,11 +50,11 @@ function* getPrimitive (env, value) {
 	throw new TypeError("Cannot convert object to primitive value.");
 }
 
-function* getValues (env, args) {
+function* getValues (args) {
 	let values = [];
 
 	for (let i = 0, ln = args.length; i < ln; i++) {
-		values.push(yield getPrimitive(env, args[i]));
+		values.push(yield getPrimitive(args[i]));
 	}
 
 	return values;
@@ -84,22 +84,22 @@ export function* toLength (env, obj) {
 	let lengthProperty = obj.getProperty("length");
 	if (lengthProperty) {
 		if (env.options.ecmaVersion === 5) {
-			return yield toUInt32(env, lengthProperty.getValue());
+			return yield toUInt32(lengthProperty.getValue());
 		}
 
-		let length = yield toInteger(env, lengthProperty.getValue());
+		let length = yield toInteger(lengthProperty.getValue());
 		return Math.min(Math.max(length, 0), MAX_LENGTH);
 	}
 
 	return 0;
 }
 
-export function* toPropertyKey (env, key) {
+export function* toPropertyKey (key) {
 	if (key && key.isSymbol) {
 		return key;
 	}
 
-	return yield toString(env, key);
+	return yield toString(key);
 }
 
 export function* toArray (env, obj, length) {
@@ -123,7 +123,7 @@ export function* toArray (env, obj, length) {
 	return arr;
 }
 
-export function* toPrimitive (env, obj, preferredType) {
+export function* toPrimitive (obj, preferredType) {
 	preferredType = preferredType && preferredType.toLowerCase();
 	if (!preferredType && obj) {
 		preferredType = obj.primitiveHint;
@@ -134,27 +134,27 @@ export function* toPrimitive (env, obj, preferredType) {
 	}
 
 	if (preferredType === "string") {
-		return yield getString(env, obj);
+		return yield getString(obj);
 	}
 
 	// default case/number
-	return yield getPrimitive(env, obj);
+	return yield getPrimitive(obj);
 }
 
-export function* toString (env, obj) {
-	return String(yield toPrimitive(env, obj, "string"));
+export function* toString (obj) {
+	return String(yield toPrimitive(obj, "string"));
 }
 
-export function* toNumber (env, obj) {
+export function* toNumber (obj) {
 	if (!obj || obj.type === "undefined") {
 		return NaN;
 	}
 
-	return Number(yield toPrimitive(env, obj, "number"));
+	return Number(yield toPrimitive(obj, "number"));
 }
 
-export function* toInteger (env, obj) {
-	let value = yield toNumber(env, obj);
+export function* toInteger (obj) {
+	let value = yield toNumber(obj);
 	if (isNaN(value)) {
 		return 0;
 	}
@@ -166,13 +166,13 @@ export function* toInteger (env, obj) {
 	return sign(value) * floor(abs(value));
 }
 
-export function* toInt32 (env, obj) {
-	let value = yield toInteger(env, obj);
+export function* toInt32 (obj) {
+	let value = yield toInteger(obj);
 	return isFinite(value) ? value : 0;
 }
 
-export function* toUInt32 (env, obj) {
-	let value = yield toInt32(env, obj);
+export function* toUInt32 (obj) {
+	let value = yield toInt32(obj);
 	return value >>> 0;
 }
 
@@ -191,7 +191,7 @@ export function	toBoolean (obj) {
 export function	toNativeFunction (env, fn, name) {
 	return env.objectFactory.createBuiltInFunction(function* () {
 		let scope = this && this.node && this.node.toNative();
-		let args = yield getValues(env, arguments);
+		let args = yield getValues(arguments);
 
 		let value = fn.apply(scope, args);
 		return env.objectFactory.createPrimitive(value);

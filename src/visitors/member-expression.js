@@ -11,7 +11,7 @@ export default function* MemberExpression (context) {
 			// if the identifier is a symbol, keep as is - property reference will handle it accordingly
 			key = id;
 		} else {
-			key = yield toString(context.env, id);
+			key = yield toString(id);
 		}
 	} else {
 		key = context.node.property.name;

@@ -6,12 +6,13 @@ export class MapType extends ObjectType {
 		this.mapData = [];
 	}
 
-	init (objectFactory) {
+	init (env) {
+		super.init(...arguments);
 		let self = this;
 
 		this.defineOwnProperty("size", {
 			getter () {
-				return objectFactory.createPrimitive(self.mapData.length);
+				return env.objectFactory.createPrimitive(self.mapData.length);
 			},
 			get () {}
 		});

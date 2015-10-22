@@ -71,8 +71,8 @@ export class Environment {
 		return this.getReference(key).getValue();
 	}
 
-	putValue (key, value, strict) {
-		this.current.scope.putValue(key, value, strict);
+	setValue (key, value, strict) {
+		this.current.scope.setValue(key, value, strict);
 	}
 
 	has (key) {

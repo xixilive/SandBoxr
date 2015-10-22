@@ -49,15 +49,15 @@ function denormalizeKey (key) {
 function toPropertyDescriptor (env, descriptor) {
 	let result = env.objectFactory.createObject();
 	if (descriptor.get || descriptor.set) {
-		result.putValue("get", descriptor.get || UNDEFINED, false, env);
-		result.putValue("set", descriptor.set || UNDEFINED, false, env);
+		result.setValue("get", descriptor.get || UNDEFINED);
+		result.setValue("set", descriptor.set || UNDEFINED);
 	} else {
-		result.putValue("value", descriptor.value, false, env);
-		result.putValue("writable", env.objectFactory.createPrimitive(descriptor.writable), false, env);
+		result.setValue("value", descriptor.value);
+		result.setValue("writable", env.objectFactory.createPrimitive(descriptor.writable));
 	}
 
-	result.putValue("enumerable", env.objectFactory.createPrimitive(descriptor.enumerable), false, env);
-	result.putValue("configurable", env.objectFactory.createPrimitive(descriptor.configurable), false,env );
+	result.setValue("enumerable", env.objectFactory.createPrimitive(descriptor.enumerable));
+	result.setValue("configurable", env.objectFactory.createPrimitive(descriptor.configurable));
 	return result;
 }
 
@@ -97,7 +97,7 @@ export class ProxyType extends ObjectType {
 		this.isProxy = true;
 	}
 
-	*call (env, thisArg, args) {
+	*call (thisArg, args) {
 		assertIsNotRevoked(this, "apply");
 
 		let proxyMethod = getProxyMethod(this, "apply");
@@ -105,11 +105,11 @@ export class ProxyType extends ObjectType {
 			return yield this.target.call(...arguments);
 		}
 
-		let argsArray = this.env.objectFactory.createArray(args);
-		return yield proxyMethod.call(env, this.handler, [this.target, thisArg, argsArray]);
+		let argsArray = this[Symbol.for("env")].objectFactory.createArray(args);
+		return yield proxyMethod.call(this.handler, [this.target, thisArg, argsArray]);
 	}
 
-	*construct (env, thisArg, args) {
+	*construct (thisArg, args) {
 		assertIsNotRevoked(this, "construct");
 
 		let proxyMethod = getProxyMethod(this, "construct");
@@ -117,8 +117,8 @@ export class ProxyType extends ObjectType {
 			return yield this.target.construct(...arguments);
 		}
 
-		let argsArray = this.env.objectFactory.createArray(args);
-		let newObj = yield proxyMethod.call(env, this.handler, [this.target, argsArray, this]);
+		let argsArray = this[Symbol.for("env")].objectFactory.createArray(args);
+		let newObj = yield proxyMethod.call(this.handler, [this.target, argsArray, this]);
 		if (!contracts.isObject(newObj)) {
 			throwProxyInvariantError("construct");
 		}
@@ -398,15 +398,15 @@ export class ProxyType extends ObjectType {
 		return rawKeys;
 	}
 
-	getIterator (env) {
+	getIterator () {
 		assertIsNotRevoked(this, "enumerate");
 
 		let proxyMethod = getProxyMethod(this, "enumerate");
 		if (contracts.isUndefined(proxyMethod)) {
-			return this.target.getIterator(env);
+			return this.target.getIterator();
 		}
 
-		let result = x(proxyMethod.call(env, this.handler, [this.target]));
+		let result = x(proxyMethod.call(this.handler, [this.target]));
 		if (!contracts.isObject(result)) {
 			throwProxyInvariantError("enumerate");
 		}
@@ -419,7 +419,7 @@ export class ProxyType extends ObjectType {
 
 		let proxyMethod = getProxyMethod(this, "set");
 		if (contracts.isUndefined(proxyMethod)) {
-			return this.target.putValue(...arguments);
+			return this.target.setValue(...arguments);
 		}
 
 		let args = [this.target, normalizeKey(this.env, key), value, this];

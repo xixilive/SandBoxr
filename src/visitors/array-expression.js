@@ -12,7 +12,7 @@ export default function* ArrayExpression (context) {
 			}
 		});
 
-		arr.putValue("length", objectFactory.createPrimitive(context.node.elements.length), false, context.env);
+		arr.setValue("length", objectFactory.createPrimitive(context.node.elements.length));
 	}
 
 	return context.result(arr);

@@ -31,7 +31,9 @@ export class Reference {
 	 */
 	setValue (value) {
 		if (this.base) {
-			return this.base.putValue(this.key, value, this.strict);
+			if (!this.base.setValue(this.key, value) && this.strict) {
+				throw new TypeError();
+			}
 		}
 
 		// check identifier before strict
@@ -49,6 +51,10 @@ export class Reference {
 		},
 		false,
 		this.env);
+	}
+
+	isStrict () {
+		return this.strict || this.env.isStrict();
 	}
 
 	/**

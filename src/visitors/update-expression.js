@@ -6,7 +6,7 @@ export default function* UpdateExpression (context) {
 	let ref = (yield context.create(context.node.argument).execute()).result;
 	contracts.assertIsValidAssignment(ref, context.env.isStrict());
 
-	let originalValue = yield toNumber(context.env, ref.getValue());
+	let originalValue = yield toNumber(ref.getValue());
 	let newValue = originalValue;
 
 	if (context.node.operator === "++") {

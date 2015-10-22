@@ -1,4 +1,4 @@
-import {toString,toPrimitive,toNativeFunction} from "../utils/native";
+import {toString,toPrimitive,toNumber} from "../utils/native";
 import * as contracts from "../utils/contracts";
 import {Reference} from "../env/reference";
 import {UNDEFINED} from "../types/primitive-type";
@@ -13,21 +13,27 @@ export default function (env) {
 
 	["parseFloat", "decodeURI", "encodeURI", "decodeURIComponent", "encodeURIComponent", "escape", "unescape"].forEach(name => {
 		globalObject.define(name, objectFactory.createBuiltInFunction(function* (value) {
-			let stringValue = yield toString(env, value);
+			let stringValue = yield toString(value);
 			return objectFactory.createPrimitive(global[name](stringValue));
 		}, 1, name));
 	});
 
-	["isNaN", "isFinite"].forEach(function (name) {
-		globalObject.define(name, toNativeFunction(env, global[name], name));
-	});
-
 	globalObject.define("parseInt", objectFactory.createBuiltInFunction(function* (value, radix) {
-		let stringValue = yield toString(env, value);
-		radix = yield toPrimitive(env, radix, "number");
+		let stringValue = yield toString(value);
+		radix = yield toPrimitive(radix, "number");
 
 		return objectFactory.createPrimitive(parseInt(stringValue, radix));
 	}, 2, "parseInt"));
+
+	globalObject.define("isNaN", objectFactory.createBuiltInFunction(function* (value) {
+		let numberValue = yield toNumber(value);
+		return objectFactory.createPrimitive(isNaN(numberValue));
+	}, 1, "isNaN"));
+
+	globalObject.define("isFinite", objectFactory.createBuiltInFunction(function* (value) {
+		let numberValue = yield toNumber(value);
+		return objectFactory.createPrimitive(isFinite(numberValue));
+	}, 1, "isFinite"));
 
 	if (options.parser) {
 		let evalFunc = objectFactory.createBuiltInFunction(function* (code) {

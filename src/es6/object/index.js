@@ -19,11 +19,14 @@ export default function (env) {
 		sources.forEach(next => {
 			if (!contracts.isNullOrUndefined(next)) {
 				let source = toObject(env, next);
-				for (let key in source.properties) {
-					if (source.properties[key].enumerable) {
-						to.putValue(key, source.getValue(key), true, env);
+				source.getOwnPropertyKeys().forEach(key => {
+					let desc = source.getOwnProperty(key);
+					if (desc && desc.enumerable) {
+						if (!to.setValue(key, desc.getValue())) {
+							throw new TypeError(`Cannot assign to read only property '${key}'`);
+						}
 					}
-				}
+				});
 			}
 		});
 
@@ -67,7 +70,7 @@ export default function (env) {
 			if (typeof key === "string") {
 				let propInfo = o.getProperty(key);
 				if (propInfo && propInfo.enumerable) {
-					arr.putValue(index++, objectFactory.createPrimitive(key), true, env);
+					arr.setValue(index++, objectFactory.createPrimitive(key));
 				}
 			}
 		});

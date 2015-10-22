@@ -22,12 +22,12 @@ export default function* UnaryExpression (context) {
 
 		case "-":
 			value = result.getValue();
-			newValue = objectFactory.createPrimitive(-(yield toNumber(context.env, value)));
+			newValue = objectFactory.createPrimitive(-(yield toNumber(value)));
 			break;
 
 		case "+":
 			value = result.getValue();
-			newValue = objectFactory.createPrimitive(+(yield toNumber(context.env, value)));
+			newValue = objectFactory.createPrimitive(+(yield toNumber(value)));
 			break;
 
 		case "!":
@@ -37,7 +37,7 @@ export default function* UnaryExpression (context) {
 
 		case "~":
 			value = result.getValue();
-			newValue = objectFactory.createPrimitive(~(yield toInt32(context.env, value)));
+			newValue = objectFactory.createPrimitive(~(yield toInt32(value)));
 			break;
 
 		case "delete":

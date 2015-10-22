@@ -27,10 +27,10 @@ export class PropertyReference extends Reference {
 	 */
 	setValue (value) {
 		let result = this.base.setValue(this.key, value);
-		if (!result && this.strict) {
+		if (!result && this.isStrict()) {
 			throw new TypeError(`Cannot assign to read only property '${this.key}'`);
 		}
-		
+
 		return result;
 	}
 
