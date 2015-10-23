@@ -136,7 +136,7 @@ export default function functionApi (env) {
 			}
 		}
 
-		let args = yield toArray(env, argsArray);
+		let args = yield toArray(argsArray);
 		let callee = this.node.native ? this.node : this.node.node;
 		thisArg = defineThis(env, this.node, thisArg);
 		this.node.bindThis(thisArg);

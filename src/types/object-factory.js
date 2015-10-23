@@ -208,7 +208,7 @@ export class ObjectFactory {
 		}
 
 		let instance = new ProxyType(target, handler);
-		instance.env = this.env;
+		instance.init(this.env);
 		return instance;
 	}
 

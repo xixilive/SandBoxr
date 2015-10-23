@@ -6,6 +6,8 @@ import {exhaust as x} from "../utils/async";
 import {toBoolean,toArray} from "../utils/native";
 import {PropertyDescriptor} from "./property-descriptor";
 
+const envSymbol = Symbol.for("env");
+
 function getProxyMethod (proxy, key) {
 	let handler = proxy.handler.getProperty(key);
 	if (!handler) {
@@ -67,12 +69,12 @@ function toCall (proxy, methodName) {
 		return proxy.target.getValue(methodName);
 	}
 
-	return proxy.env.objectFactory.createBuiltInFunction(function* (thisArg, ...args) {
+	return proxy[envSymbol].objectFactory.createBuiltInFunction(function* (thisArg, ...args) {
 		if (methodName === "apply" && args.length > 0) {
-			args = toArray(proxy.env, args[0]);
+			args = toArray(args[0]);
 		}
 
-		return yield proxy.call(proxy.env, thisArg, args);
+		return yield proxy.call(thisArg, args);
 	}, 1, `Function.prototype.${methodName}`);
 }
 
@@ -105,7 +107,7 @@ export class ProxyType extends ObjectType {
 			return yield this.target.call(...arguments);
 		}
 
-		let argsArray = this[Symbol.for("env")].objectFactory.createArray(args);
+		let argsArray = this[envSymbol].objectFactory.createArray(args);
 		return yield proxyMethod.call(this.handler, [this.target, thisArg, argsArray]);
 	}
 
@@ -117,7 +119,7 @@ export class ProxyType extends ObjectType {
 			return yield this.target.construct(...arguments);
 		}
 
-		let argsArray = this[Symbol.for("env")].objectFactory.createArray(args);
+		let argsArray = this[envSymbol].objectFactory.createArray(args);
 		let newObj = yield proxyMethod.call(this.handler, [this.target, argsArray, this]);
 		if (!contracts.isObject(newObj)) {
 			throwProxyInvariantError("construct");
@@ -134,7 +136,8 @@ export class ProxyType extends ObjectType {
 			return this.target.has(key);
 		}
 
-		let result = toBoolean(x(proxyMethod.call(this.env, this.handler, [this.target, normalizeKey(this.env, key)])));
+		let env = this[envSymbol];
+		let result = toBoolean(x(proxyMethod.call(this.handler, [this.target, normalizeKey(env, key)])));
 		if (!result) {
 			let propInfo = this.target.getProperty(key);
 			if (propInfo) {
@@ -168,11 +171,12 @@ export class ProxyType extends ObjectType {
 			return this.target.getProperty(key, target);
 		}
 
-		let value = x(proxyMethod.call(this.env, this.handler, [this.target, normalizeKey(this.env, key), this]));
+		let env = this[envSymbol];
+		let value = x(proxyMethod.call(this.handler, [this.target, normalizeKey(env, key), this]));
 		let propInfo = this.target.getProperty(key);
 		if (propInfo && !propInfo.configurable) {
 			let targetValue = propInfo.getValue();
-			if (propInfo.dataProperty && !propInfo.writable && !this.env.ops.areSame(value, targetValue)) {
+			if (propInfo.dataProperty && !propInfo.writable && !env.ops.areSame(value, targetValue)) {
 				throwProxyInvariantError("get");
 			}
 
@@ -192,7 +196,8 @@ export class ProxyType extends ObjectType {
 			return this.target.getOwnProperty(key);
 		}
 
-		let descriptor = x(proxyMethod.call(this.env, this.handler, [this.target, normalizeKey(this.env, key)]));
+		let env = this[envSymbol];
+		let descriptor = x(proxyMethod.call(this.handler, [this.target, normalizeKey(env, key)]));
 		if (descriptor.type !== "object" && descriptor.type !== "undefined") {
 			throwProxyInvariantError("getOwnPropertyDescriptor");
 		}
@@ -246,7 +251,7 @@ export class ProxyType extends ObjectType {
 			return this.target.getPrototype();
 		}
 
-		let proto = x(proxyMethod.call(this.env, this.handler, [this.target]));
+		let proto = x(proxyMethod.call(this.handler, [this.target]));
 		if (!contracts.isObject(proto) && !contracts.isNull(proto)) {
 			throwProxyInvariantError("getPrototypeOf");
 		}
@@ -271,7 +276,7 @@ export class ProxyType extends ObjectType {
 			return this.target.setPrototype(proto);
 		}
 
-		let result = toBoolean(x(proxyMethod.call(this.env, this.handler, [this.target, proto])));
+		let result = toBoolean(x(proxyMethod.call(this.handler, [this.target, proto])));
 		if (this.target.isExtensible()) {
 			return result;
 		}
@@ -292,7 +297,7 @@ export class ProxyType extends ObjectType {
 			return this.target.isExtensible();
 		}
 
-		let result = toBoolean(x(proxyMethod.call(this.env, this.handler, [this.target])));
+		let result = toBoolean(x(proxyMethod.call(this.handler, [this.target])));
 		let targetResult = this.target.isExtensible();
 
 		if (result !== targetResult) {
@@ -310,7 +315,7 @@ export class ProxyType extends ObjectType {
 			return this.target.preventExtensions();
 		}
 
-		let result = toBoolean(x(proxyMethod.call(this.env, this.handler, [this.target])));
+		let result = toBoolean(x(proxyMethod.call(this.handler, [this.target])));
 		if (result && this.target.isExtensible()) {
 			throwProxyInvariantError("preventExtensions");
 		}
@@ -326,7 +331,8 @@ export class ProxyType extends ObjectType {
 			return this.target.deleteProperty(key, throwOnError);
 		}
 
-		let result = toBoolean(x(proxyMethod.call(this.env, this.handler, [this.target, normalizeKey(this.env, key)])));
+		let env = this[envSymbol];
+		let result = toBoolean(x(proxyMethod.call(this.handler, [this.target, normalizeKey(env, key)])));
 		if (result) {
 			let propInfo = this.target.getProperty(key);
 			if (propInfo && !propInfo.configurable) {
@@ -345,8 +351,9 @@ export class ProxyType extends ObjectType {
 			return this.target.defineOwnProperty(...arguments);
 		}
 
-		let desc = toPropertyDescriptor(this.env, descriptor);
-		let result = toBoolean(x(proxyMethod.call(this.env, this.handler, [this.target, normalizeKey(this.env, key), desc])));
+		let env = this[envSymbol];
+		let desc = toPropertyDescriptor(env, descriptor);
+		let result = toBoolean(x(proxyMethod.call(this.handler, [this.target, normalizeKey(env, key), desc])));
 
 		if (result) {
 			let propInfo = this.target.getProperty(key);
@@ -374,7 +381,7 @@ export class ProxyType extends ObjectType {
 			return this.target.getOwnPropertyKeys(keyType);
 		}
 
-		let proxyKeys = x(toArray(this.env, x(proxyMethod.call(this.env, this.handler, [this.target]))));
+		let proxyKeys = x(toArray(x(proxyMethod.call(this.handler, [this.target]))));
 		let rawKeys = proxyKeys.map(denormalizeKey);
 		let targetKeys = this.target.getOwnPropertyKeys();
 
@@ -422,13 +429,14 @@ export class ProxyType extends ObjectType {
 			return this.target.setValue(...arguments);
 		}
 
-		let args = [this.target, normalizeKey(this.env, key), value, this];
-		let result = toBoolean(x(proxyMethod.call(this.env, this.handler, args)));
+		let env = this[envSymbol];
+		let args = [this.target, normalizeKey(env, key), value, this];
+		let result = toBoolean(x(proxyMethod.call(this.handler, args)));
 		if (result) {
 			let propInfo = this.target.getProperty(key);
 			if (propInfo && !propInfo.configurable) {
 				let targetValue = propInfo.getValue();
-				if (propInfo.dataProperty && !propInfo.writable && !this.env.ops.areSame(value, targetValue)) {
+				if (propInfo.dataProperty && !propInfo.writable && !env.ops.areSame(value, targetValue)) {
 					throwProxyInvariantError("set");
 				}
 

@@ -28,7 +28,7 @@ const iterate = {
 			return IterableIterator.create(env, obj, it);
 		}
 
-		let length = x(toLength(env, obj));
+		let length = x(toLength(obj));
 		return this.forward(env, obj, 0, length);
 	},
 

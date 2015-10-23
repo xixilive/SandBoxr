@@ -296,7 +296,7 @@ export class ObjectType {
 	}
 
 	freeze () {
-		this.each(this, desc => {
+		this.each(desc => {
 			if (desc.dataProperty) {
 				this.defineOwnProperty(desc.key, { writable: false, configurable: false });
 			} else {
@@ -313,7 +313,7 @@ export class ObjectType {
 	}
 
 	seal () {
-		this.each(this, desc => {
+		this.each(desc => {
 			this.defineOwnProperty(desc.key, { configurable: false }, true);
 		});
 

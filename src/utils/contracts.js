@@ -139,6 +139,10 @@ export function isRegExp (obj) {
 	return obj.className === "RegExp";
 }
 
+export function isNumber (obj) {
+	return obj && obj.type === "number";
+}
+
 export function isOctalLiteral (rawValue, actualValue) {
 	if (typeof actualValue === "number" && octalPattern.test(rawValue)) {
 		return true;

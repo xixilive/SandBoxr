@@ -38,7 +38,7 @@ export default function (env) {
 		if (iterable) {
 			contracts.assertIsObject(iterable, "Map");
 
-			let length = yield toLength(env, iterable);
+			let length = yield toLength(iterable);
 			let setter = obj.getValue("set");
 
 			contracts.assertIsFunction(setter, "set");

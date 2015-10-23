@@ -61,7 +61,7 @@ gulp.task("test262-6", function () {
 	//	- Error +
 	//	- Proxy +
 
-	return streamer6({ files: ["/built-ins/object/**/*.js"] })
+	return streamer6({ files: ["/built-ins/reflect/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 

@@ -80,10 +80,18 @@ export function	toObject (env, obj, throwOnError) {
 	return obj;
 }
 
-export function* toLength (env, obj) {
+function getEnv (obj) {
+	return obj[Symbol.for("env")];
+}
+
+function getOptions (obj) {
+	return getEnv(obj).options;
+}
+
+export function* toLength (obj) {
 	let lengthProperty = obj.getProperty("length");
 	if (lengthProperty) {
-		if (env.options.ecmaVersion === 5) {
+		if (getOptions(obj).ecmaVersion === 5) {
 			return yield toUInt32(lengthProperty.getValue());
 		}
 
@@ -102,12 +110,12 @@ export function* toPropertyKey (key) {
 	return yield toString(key);
 }
 
-export function* toArray (env, obj, length) {
+export function* toArray (obj, length) {
 	let arr = [];
 
 	if (obj) {
 		if (arguments.length < 3) {
-			length = yield toLength(env, obj);
+			length = yield toLength(obj);
 		}
 
 		let i = 0;
