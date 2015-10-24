@@ -60,8 +60,9 @@ gulp.task("test262-6", function () {
 	//	- String -2
 	//	- Error +
 	//	- Proxy +
+	//	- Reflect +
 
-	return streamer6({ files: ["/built-ins/reflect/**/*.js"] })
+	return streamer6({ files: ["/built-ins/map/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 

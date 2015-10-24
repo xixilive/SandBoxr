@@ -102,6 +102,16 @@ export function assertAreValidArguments (params, strict) {
 	});
 }
 
+export function assertIsMap (obj, methodName) {
+	if (!obj || obj.className !== "Map") {
+		throw TypeError(`The object must be a map when calling ${methodName}`);
+	}
+}
+
+export function assertIsSet (obj) {
+	return obj && obj.className === "Set";
+}
+
 export function	isValidArrayLength (length) {
 	return isInteger(length) && length >= 0 && length < 4294967296;
 }

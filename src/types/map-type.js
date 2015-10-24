@@ -3,7 +3,8 @@ import {ObjectType} from "./object-type";
 export class MapType extends ObjectType {
 	constructor () {
 		super();
-		this.mapData = [];
+		this.className = "Map";
+		this.data = [];
 	}
 
 	init (env) {
@@ -12,7 +13,7 @@ export class MapType extends ObjectType {
 
 		this.defineOwnProperty("size", {
 			getter () {
-				return env.objectFactory.createPrimitive(self.mapData.length);
+				return env.objectFactory.createPrimitive(self.data.length);
 			},
 			get () {}
 		});

@@ -3,6 +3,7 @@ import {ObjectType} from "./object-type";
 export class SetType extends ObjectType {
 	constructor () {
 		super();
+		this.className = "Set";
 		this.setData = [];
 	}
 

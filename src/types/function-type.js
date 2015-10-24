@@ -68,7 +68,7 @@ export class FunctionType extends ObjectType {
 	}
 
 	*construct (thisArg, args, callee) {
-		thisArg = this[Symbol.for("env")].objectFactory.createObject(this);
+		thisArg = thisArg || this[Symbol.for("env")].objectFactory.createObject(this);
 		let result = yield this.call(thisArg, args, callee);
 		if (result && !result.isPrimitive) {
 			return result;

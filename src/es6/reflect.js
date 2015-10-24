@@ -2,6 +2,7 @@ import $apply from "./reflect.apply";
 import $construct from "./reflect.construct";
 import $defineProperty from "./reflect.define-property";
 import $deleteProperty from "./reflect.delete-property";
+import $enumerate from "./reflect.enumerate";
 import $get from "./reflect.get";
 import $getOwnPropertyDescriptor from "./reflect.get-own-property-descriptor";
 import $getPrototypeOf from "./reflect.get-prototype-of";
@@ -19,6 +20,7 @@ export default function (globalObject, env, factory) {
 	$construct(reflectClass, env, factory);
 	$defineProperty(reflectClass, env, factory);
 	$deleteProperty(reflectClass, env, factory);
+	$enumerate(reflectClass, env, factory);
 	$get(reflectClass, env, factory);
 	$getOwnPropertyDescriptor(reflectClass, env, factory);
 	$getPrototypeOf(reflectClass, env, factory);
@@ -28,6 +30,6 @@ export default function (globalObject, env, factory) {
 	$preventExtensions(reflectClass, env, factory);
 	$set(reflectClass, env, factory);
 	$setPrototypeOf(reflectClass, env, factory);
-	
+
 	globalObject.define("Reflect", reflectClass);
 }

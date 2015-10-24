@@ -1,4 +1,5 @@
 import {PropertyDescriptor} from "./property-descriptor";
+const integerMatcher = /^\n+$/;
 
 function isSymbol (key) {
 	return key && typeof key !== "string" && key.isSymbol;
@@ -33,6 +34,22 @@ function* propertyIterator (env, obj) {
 	return objectFactory.createIteratorResult({done: true});
 }
 
+function propertyKeyComparer (a, b) {
+	if (integerMatcher.test(a)) {
+		if (integerMatcher.test(b)) {
+			return a - b;
+		}
+
+		return 1;
+	}
+
+	if (integerMatcher.test(b)) {
+		return -1;
+	}
+
+	return 0;
+}
+
 export class ObjectType {
 	constructor () {
 		this.isPrimitive = false;
@@ -55,6 +72,24 @@ export class ObjectType {
 	}
 
 	setPrototype (proto) {
+		if (this.proto === proto) {
+			return true;
+		}
+
+		if (!this.isExtensible()) {
+			return false;
+		}
+
+		// check whether prototype chain already includes object
+		let current = proto;
+		while (current) {
+			if (current === this) {
+				return false;
+			}
+
+			current = current.getPrototype();
+		}
+
 		this.proto = proto;
 		this.version++;
 
@@ -87,7 +122,8 @@ export class ObjectType {
 		let keys = [];
 
 		if (keyType !== "Symbol") {
-			keys = Object.keys(this.properties);
+			// note: this uses native sort which may not be stable
+			keys = Object.keys(this.properties).sort(propertyKeyComparer);
 		}
 
 		if (keyType !== "String") {
@@ -135,6 +171,8 @@ export class ObjectType {
 				if (!receiverDescriptor.dataProperty) {
 					return false;
 				}
+
+				descriptor = receiverDescriptor;
 			}
 
 			if (!descriptor.dataProperty) {

@@ -6,7 +6,7 @@ import $Symbol from "./symbol";
 import $String from "./string";
 import $Proxy from "./proxy";
 import setAPI from "./set/";
-import mapAPI from "./map/";
+import $Map from "./map";
 import $Reflect from "./reflect";
 import $RegExp from "./regex";
 import {SymbolType} from "../types/symbol-type";
@@ -14,7 +14,6 @@ import {SymbolType} from "../types/symbol-type";
 export default function (env) {
 	ecma5(env);
 	setAPI(env);
-	mapAPI(env);
 
 	let objectFactory = env.objectFactory;
 	let $global = env.global;
@@ -27,6 +26,7 @@ export default function (env) {
 	$Proxy($global, env, objectFactory);
 	$RegExp($global, env, objectFactory);
 	$Reflect($global, env, objectFactory);
+	$Map($global, env, objectFactory);
 
 	// setup class symbols
 	let stringTagKey = SymbolType.getByKey("toStringTag");
@@ -58,10 +58,10 @@ export default function (env) {
 	$global.getValue("Date").define("length", objectFactory.createPrimitive(7), lengthAttr);
 	$global.getValue("RegExp").define("length", objectFactory.createPrimitive(2), lengthAttr);
 
-	let funcProto = env.global.getValue("Function").getValue("prototype");
+	let funcProto = $global.getValue("Function").getValue("prototype");
 
 	let thrower = function () {
-		throw new TypeError("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
+		throw TypeError("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
 	};
 
 	let throwerFunc = objectFactory.createBuiltInFunction(thrower);

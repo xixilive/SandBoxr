@@ -1,14 +1,15 @@
-import * as contracts from "../utils/contracts";
+import {isObject,isNull,assertIsNotNullOrUndefined} from "../utils/contracts";
 
-export default function (objectClass, env, factory) {
-	objectClass.define("setPrototypeOf", factory.createBuiltInFunction(function (target, proto) {
-		contracts.assertIsNotNullOrUndefined(target, "setPrototypeOf");
-		if (!contracts.isObject(proto) && !contracts.isNull(proto)) {
-			throw new TypeError("Object prototype may only be an Object or null");
+export default function ($target, env, factory) {
+	$target.define("setPrototypeOf", factory.createBuiltInFunction(function (target, proto) {
+		assertIsNotNullOrUndefined(target, "setPrototypeOf");
+
+		if (!isObject(proto) && !isNull(proto)) {
+			throw TypeError("Object prototype may only be an Object or null");
 		}
 
-		if (contracts.isObject(target) && !setPrototype(target, proto)) {
-			throw new TypeError(`${target.className} is not extensible`);
+		if (isObject(target) && !target.setPrototype(proto)) {
+			throw TypeError(`${target.className} is not extensible`);
 		}
 
 		return target;
