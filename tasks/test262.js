@@ -51,7 +51,7 @@ gulp.task("test262-6", function () {
 
 	// built-ins
 	//	- Object -41
-	//	- Number -1
+	//	- Number -1 (needs typed arrays)
 	//	- Boolean +
 	//	- Array -21
 	//	- Date -8
@@ -61,8 +61,10 @@ gulp.task("test262-6", function () {
 	//	- Error +
 	//	- Proxy +
 	//	- Reflect +
+	//	- Map -11 (needs WeakMap)
+	//	- MapIterator +
 
-	return streamer6({ files: ["/built-ins/map/**/*.js"] })
+	return streamer6({ files: ["/built-ins/Math/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 

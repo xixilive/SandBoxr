@@ -16,7 +16,7 @@ import {ProxyType} from "./proxy-type";
 import * as contracts from "../utils/contracts";
 
 let orphans = Object.create(null);
-const functionNameMatcher = /\.?(\w+)$/;
+const functionNameMatcher = /([^.]+(?:\[Symbol\.\w+\])?)$/;
 
 function setOrphans (scope) {
 	for (let typeName in orphans) {
@@ -235,20 +235,23 @@ export class ObjectFactory {
 		return instance;
 	}
 
-	createIterator (iterable, proto, kind) {
+	createIterator (iterable, proto) {
 		let self = this;
-		let instance = new IteratorType(iterable, kind);
+		let instance = new IteratorType(iterable);
 
 		if (!proto) {
 			proto = this.createObject();
 			proto.className = "[Symbol.iterator]";
+		}
+
+		if (!proto.has("next")) {
 			proto.define("next", this.createBuiltInFunction(function () {
 				let result = this.node.advance();
 				if (result.value) {
 					return result.value;
 				}
 
-				return self.createIteratorResult({done: true});
+				return self.createIteratorResult({ done: true });
 			}));
 		}
 

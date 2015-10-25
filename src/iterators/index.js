@@ -24,8 +24,8 @@ const iterate = {
 		let iterator = obj.getProperty(iteratorKey);
 		if (iterator) {
 			let fn = iterator.getValue();
-			let it = x(exec(env, fn, [], obj, fn));
-			return IterableIterator.create(env, obj, it);
+			let it = x(fn.call(obj));
+			return IterableIterator.create(it);
 		}
 
 		let length = x(toLength(obj));

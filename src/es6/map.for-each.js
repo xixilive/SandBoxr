@@ -1,18 +1,22 @@
 import {UNDEFINED} from "../types/primitive-type";
 import {assertIsMap,assertIsFunction} from "../utils/contracts";
-import {each} from "../utils/async";
 
 export default function ($target, env, factory) {
 	$target.define("forEach", factory.createBuiltInFunction(function* (callback, thisArg) {
 		assertIsMap(this.node, "Map.prototype.forEach");
 		assertIsFunction(callback, "callback");
 
-		let m = this.node;
 		thisArg = thisArg || UNDEFINED;
+		let data = this.node.data;
+		let index = 0;
 
-		yield each(this.node.data, function* (e) {
-			let args = [e.key, e.value, m];
-			yield callback.call(thisArg, args);
-		});
+		// length might change during iteration
+		while (index < data.length) {
+			let entry = data[index++];
+			if (entry) {
+				let args = [entry.value, entry.key, this.node];
+				yield callback.call(thisArg, args);
+			}
+		}
 	}, 1, "Map.prototype.forEach"));
 }

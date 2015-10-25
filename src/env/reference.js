@@ -34,6 +34,8 @@ export class Reference {
 			if (!this.base.setValue(this.key, value) && this.strict) {
 				throw new TypeError();
 			}
+
+			return true;
 		}
 
 		// check identifier before strict

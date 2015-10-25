@@ -61,12 +61,13 @@ export class DeclarativeEnvironment {
 					throw new TypeError(`Cannot write to immutable binding: ${key}`);
 				}
 
-				return;
+				return false;
 			}
 
 			this.properties[key].setValue(value);
+			return true;
 		} else {
-			this.parent.setValue(...arguments);
+			return this.parent.setValue(...arguments);
 		}
 	}
 

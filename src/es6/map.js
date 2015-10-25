@@ -1,5 +1,5 @@
-import {assertIsObject,assertIsFunction} from "../utils/contracts";
-import {toLength} from "../utils/native";
+import {assertIsObject,assertIsFunction,isNullOrUndefined} from "../utils/contracts";
+import {UNDEFINED} from "../types/primitive-type";
 import iterate from "../iterators/";
 
 import $clear from "./map.clear";
@@ -8,6 +8,8 @@ import $forEach from "./map.for-each";
 import $get from "./map.get";
 import $has from "./map.has";
 import $set from "./map.set";
+import $size from "./map.size";
+import $iterator from "./map.iterator";
 
 export default function ($global, env, factory) {
 	let proto = factory.createObject();
@@ -17,25 +19,26 @@ export default function ($global, env, factory) {
 			throw TypeError("Constructor Map requires 'new'");
 		}
 
-		let obj = factory.create("Map");
+		let instance = factory.create("Map");
 
-		if (iterable) {
+		if (!isNullOrUndefined(iterable)) {
 			assertIsObject(iterable, "Map");
 
-			let length = yield toLength(iterable);
-			let setter = obj.getValue("set");
-
+			let setter = instance.getValue("set");
 			assertIsFunction(setter, "set");
 
-			for (let entry of iterate.forward(env, iterable, 0, length)) {
-				let key = entry.value.getValue("0");
-				let value = entry.value.getValue("1");
-				yield setter.call(obj, [key, value]);
-			}
+			let it = iterate.getIterator(env, iterable);
+			yield it.each(function* (item) {
+				assertIsObject(item, "Map");
+				
+				let key = item.getValue("0") || UNDEFINED;
+				let value = item.getValue("1") || UNDEFINED;
+				yield setter.call(instance, [key, value]);
+			});
 		}
 
-		return obj;
-	}, proto, { name: "Map" });
+		return instance;
+	}, proto, { name: "Map", writable: false });
 
 	$clear(proto, env, factory);
 	$delete(proto, env, factory);
@@ -43,6 +46,8 @@ export default function ($global, env, factory) {
 	$get(proto, env, factory);
 	$has(proto, env, factory);
 	$set(proto, env, factory);
+	$iterator(proto, env, factory);
+	$size(proto, env, factory);
 
 	$global.define("Map", mapClass);
 }

@@ -7,6 +7,7 @@ import $String from "./string";
 import $Proxy from "./proxy";
 import setAPI from "./set/";
 import $Map from "./map";
+import $Math from "./math";
 import $Reflect from "./reflect";
 import $RegExp from "./regex";
 import {SymbolType} from "../types/symbol-type";
@@ -23,6 +24,7 @@ export default function (env) {
 	$String($global, env, objectFactory);
 	$Array($global, env, objectFactory);
 	$Number($global, env, objectFactory);
+	$Math($global, env, objectFactory);
 	$Proxy($global, env, objectFactory);
 	$RegExp($global, env, objectFactory);
 	$Reflect($global, env, objectFactory);
@@ -31,9 +33,8 @@ export default function (env) {
 	// setup class symbols
 	let stringTagKey = SymbolType.getByKey("toStringTag");
 	let speciesKey = SymbolType.getByKey("species");
-	["Function", "Number", "Boolean", "Object", "Array", "String", "Date", "RegExp", "JSON", "Error"].forEach(typeName => {
+	["Function", "Number", "Boolean", "Object", "Array", "String", "Date", "RegExp", "JSON", "Error", "Math", "Map"].forEach(typeName => {
 		let ctor = $global.getValue(typeName);
-		ctor.define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
 
 		let speciesGetter = function () { return ctor; };
 		let speciesGetterFunc = objectFactory.createGetter(speciesGetter, "[Symbol.species]");
@@ -41,9 +42,12 @@ export default function (env) {
 
 		if (ctor.owns("prototype")) {
 			let proto = ctor.getValue("prototype");
+			proto.define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
 
 			// prototypes in ES6 can't be coerced into primitives
 			proto.className = "Object";
+		} else {
+			ctor.define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
 		}
 	});
 
@@ -57,6 +61,7 @@ export default function (env) {
 	$global.getValue("String").define("length", objectFactory.createPrimitive(1), lengthAttr);
 	$global.getValue("Date").define("length", objectFactory.createPrimitive(7), lengthAttr);
 	$global.getValue("RegExp").define("length", objectFactory.createPrimitive(2), lengthAttr);
+	$global.getValue("Map").define("length", objectFactory.createPrimitive(0), lengthAttr);
 
 	let funcProto = $global.getValue("Function").getValue("prototype");
 

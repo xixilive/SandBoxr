@@ -45,7 +45,7 @@ export class NativeFunctionType extends FunctionType {
 		}
 	}
 
-	*call (thisArg, args) {
+	*call (thisArg, args = []) {
 		let env = this[Symbol.for("env")];
 
 		if (!thisArg) {
@@ -64,7 +64,7 @@ export class NativeFunctionType extends FunctionType {
 		});
 	}
 
-	*construct (thisArg, args) {
+	*construct (thisArg, args = []) {
 		let self = this;
 		let env = this[Symbol.for("env")];
 		let scope = env.createExecutionScope(this, thisArg);

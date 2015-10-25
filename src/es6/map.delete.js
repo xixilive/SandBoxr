@@ -4,11 +4,15 @@ import {findIndex} from "./collection-helpers";
 export default function ($target, env, factory) {
 	$target.define("delete", factory.createBuiltInFunction(function (key) {
 		assertIsMap(this.node, "Map.prototype.delete");
-		
-		let index = findIndex(this.node, key);
-		if (index >= 0) {
-			this.node.data.splice(index, 1);
-			return factory.createPrimitive(true);
+
+		let data = this.node.data;
+		if (data.length > 0) {
+			let index = findIndex(this.node, key);
+			if (index >= 0) {
+				// leave holes in array
+				data[index] = undefined;
+				return factory.createPrimitive(true);
+			}
 		}
 
 		return factory.createPrimitive(false);

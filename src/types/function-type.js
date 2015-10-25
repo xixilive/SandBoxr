@@ -47,7 +47,7 @@ export class FunctionType extends ObjectType {
 		}
 	}
 
-	*call (thisArg, args, callee) {
+	*call (thisArg, args = [], callee) {
 		let self = this;
 		let env = this[Symbol.for("env")];
 		let scope = env.createExecutionScope(this, thisArg);
@@ -67,7 +67,7 @@ export class FunctionType extends ObjectType {
 		});
 	}
 
-	*construct (thisArg, args, callee) {
+	*construct (thisArg, args = [], callee) {
 		thisArg = thisArg || this[Symbol.for("env")].objectFactory.createObject(this);
 		let result = yield this.call(thisArg, args, callee);
 		if (result && !result.isPrimitive) {

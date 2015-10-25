@@ -1,18 +1,16 @@
-import {execute as exec} from "../utils/func";
 import {toBoolean} from "../utils/native";
 import {exhaust as x} from "../utils/async";
 import {UNDEFINED} from "../types/primitive-type";
 
 export default class IterableIterator {
-	constructor (env, it) {
-		this.env = env;
+	constructor (it) {
 		this.currentIndex = 0;
 		this.iterator = it;
 		this.advancer = it.getValue("next");
 	}
 
 	next () {
-		let result = x(exec(this.env, this.advancer, [], this.iterator, this.advancer));
+		let result = x(this.advancer.call(this.iterator));
 		let value = {key: this.currentIndex++, value: UNDEFINED};
 
 		let valueProperty = result.getProperty("value");
@@ -24,18 +22,36 @@ export default class IterableIterator {
 		return {done, value};
 	}
 
+	*each (func) {
+		let done = false;
+
+		while (!done) {
+			try {
+				let current;
+				({done, value: current} = this.next());
+
+				if (!done) {
+					yield func(current.value || UNDEFINED);
+				}
+			} catch (err) {
+				this.return();
+				throw err;
+			}
+		}
+	}
+
 	["return"] () {
 		let propInfo = this.iterator.getProperty("return");
 		if (propInfo) {
 			let returnFunc = propInfo.getValue();
-			return x(exec(this.env, returnFunc, [], this.iterator, returnFunc));
+			return x(returnFunc.call(this.iterator));
 		}
 
 		return UNDEFINED;
 	}
 
-	static create (env, obj, it) {
-		return new IterableIterator(env, it);
+	static create (it) {
+		return new IterableIterator(it);
 	}
 }
 

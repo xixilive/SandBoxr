@@ -319,7 +319,8 @@ export class ObjectType {
 
 	getValue (key) {
 		if (arguments.length > 0) {
-			return this.getProperty(key).getValue();
+			let property = this.getProperty(key);
+			return property && property.getValue();
 		}
 
 		return this;

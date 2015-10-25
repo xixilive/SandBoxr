@@ -3,8 +3,10 @@ export function findIndex (obj, key) {
 
 	for (let i = 0, length = obj.data.length; i < length; i++) {
 		let current = obj.data[i];
-		if (env.ops.areSameOrZero(key, current.key)) {
-			return i;
+		if (current) {
+			if (env.ops.areSameOrZero(key, current.key)) {
+				return i;
+			}
 		}
 	}
 
