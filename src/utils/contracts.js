@@ -108,8 +108,10 @@ export function assertIsMap (obj, methodName) {
 	}
 }
 
-export function assertIsSet (obj) {
-	return obj && obj.className === "Set";
+export function assertIsSet (obj, methodName) {
+	if (!obj || obj.className !== "Set") {
+		throw TypeError(`The object must be a set when calling ${methodName}`);
+	}
 }
 
 export function	isValidArrayLength (length) {

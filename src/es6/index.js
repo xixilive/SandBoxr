@@ -5,7 +5,7 @@ import $Object from "./object";
 import $Symbol from "./symbol";
 import $String from "./string";
 import $Proxy from "./proxy";
-import setAPI from "./set/";
+import $Set from "./set";
 import $Map from "./map";
 import $Math from "./math";
 import $Reflect from "./reflect";
@@ -14,8 +14,7 @@ import {SymbolType} from "../types/symbol-type";
 
 export default function (env) {
 	ecma5(env);
-	setAPI(env);
-
+	
 	let objectFactory = env.objectFactory;
 	let $global = env.global;
 
@@ -29,11 +28,12 @@ export default function (env) {
 	$RegExp($global, env, objectFactory);
 	$Reflect($global, env, objectFactory);
 	$Map($global, env, objectFactory);
+	$Set($global, env, objectFactory);
 
 	// setup class symbols
 	let stringTagKey = SymbolType.getByKey("toStringTag");
 	let speciesKey = SymbolType.getByKey("species");
-	["Function", "Number", "Boolean", "Object", "Array", "String", "Date", "RegExp", "JSON", "Error", "Math", "Map"].forEach(typeName => {
+	["Function", "Number", "Boolean", "Object", "Array", "String", "Date", "RegExp", "JSON", "Error", "Math", "Map", "Set"].forEach(typeName => {
 		let ctor = $global.getValue(typeName);
 
 		let speciesGetter = function () { return ctor; };
@@ -62,6 +62,7 @@ export default function (env) {
 	$global.getValue("Date").define("length", objectFactory.createPrimitive(7), lengthAttr);
 	$global.getValue("RegExp").define("length", objectFactory.createPrimitive(2), lengthAttr);
 	$global.getValue("Map").define("length", objectFactory.createPrimitive(0), lengthAttr);
+	$global.getValue("Set").define("length", objectFactory.createPrimitive(0), lengthAttr);
 
 	let funcProto = $global.getValue("Function").getValue("prototype");
 

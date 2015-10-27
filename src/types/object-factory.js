@@ -8,10 +8,9 @@ import {StringType} from "./string-type";
 import {DateType} from "./date-type";
 import {ErrorType} from "./error-type";
 import {ArgumentType} from "./argument-type";
-import {SetType} from "./set-type";
 import {IteratorType} from "./iterator-type";
 import {SymbolType} from "./symbol-type";
-import {MapType} from "./map-type";
+import {CollectionType} from "./collection-type";
 import {ProxyType} from "./proxy-type";
 import * as contracts from "../utils/contracts";
 
@@ -121,11 +120,11 @@ export class ObjectFactory {
 				break;
 
 			case "Set":
-				instance = new SetType();
+				instance = new CollectionType("Set");
 				break;
 
 			case "Map":
-				instance = new MapType();
+				instance = new CollectionType("Map");
 				break;
 
 			case "Error":

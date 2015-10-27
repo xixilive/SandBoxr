@@ -63,8 +63,9 @@ gulp.task("test262-6", function () {
 	//	- Reflect +
 	//	- Map -11 (needs WeakMap)
 	//	- MapIterator +
+	//	- Set -8 (needs WeakSet)
 
-	return streamer6({ files: ["/built-ins/Math/**/*.js"] })
+	return streamer6({ files: ["/built-ins/SetIteratorPrototype/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 
