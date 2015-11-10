@@ -1,12 +1,12 @@
 import {PropertyReference} from "./property-reference";
 
 export class ObjectEnvironment {
-	constructor (parent, obj, thisArg, env) {
+	constructor (parent, obj, thisArg, env, strict) {
 		this.parent = parent && parent.scope;
-		this.strict = parent && parent.strict;
 		this.object = obj;
 		this.thisBinding = thisArg || obj;
 		this.env = env;
+		this.strict = strict;
 	}
 
 	getReference (key, unqualified) {
@@ -57,7 +57,7 @@ export class ObjectEnvironment {
 	getValue (key, throwOnError) {
 		if (!this.owns(key)) {
 			if (throwOnError) {
-				throw new ReferenceError(`${key} is not defined.`);
+				throw ReferenceError(`${key} is not defined.`);
 			}
 
 			return undefined;

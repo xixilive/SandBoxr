@@ -1,6 +1,4 @@
-import {UNDEFINED} from "../types/primitive-type";
 import {SymbolType} from "../types/symbol-type";
-import {toObject} from "../utils/native";
 import {assertIsMap} from "../utils/contracts";
 
 export default function ($target, env, factory) {

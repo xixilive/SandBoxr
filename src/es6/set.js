@@ -14,7 +14,7 @@ export default function ($global, env, factory) {
 
 	let setClass = factory.createFunction(function* (iterable) {
 		if (!this.isNew) {
-			throw new TypeError("Constructor Set requires 'new'");
+			throw TypeError("Constructor Set requires 'new'");
 		}
 
 		let instance = factory.create("Set");
@@ -25,7 +25,7 @@ export default function ($global, env, factory) {
 			let adder = proto.getValue("add");
 			assertIsFunction(adder, "add");
 
-			let it = iterate.getIterator(env, iterable);
+			let it = iterate.getIterator(iterable);
 			yield it.each(function* (item) {
 				yield adder.call(instance, [item]);
 			});

@@ -19,7 +19,7 @@ export default function (target, env, factory) {
 		let stringValue = yield toString(this.node);
 
 		if (isRegExp(searchString)) {
-			throw new TypeError("First argument to String.prototype.endsWith must not be a regular expression");
+			throw TypeError("First argument to String.prototype.endsWith must not be a regular expression");
 		}
 
 		let searchValue = yield toString(searchString);
@@ -37,7 +37,7 @@ export default function (target, env, factory) {
 		let stringValue = yield toString(this.node);
 
 		if (isRegExp(searchString)) {
-			throw new TypeError("First argument to String.prototype.startsWith must not be a regular expression");
+			throw TypeError("First argument to String.prototype.startsWith must not be a regular expression");
 		}
 
 		let searchValue = yield toString(searchString);
@@ -49,9 +49,9 @@ export default function (target, env, factory) {
 	target.define("includes", factory.createBuiltInFunction(function* (searchString, position) {
 		assertIsNotNullOrUndefined(this.node, "String.prototype.includes");
 		let stringValue = yield toString(this.node);
-		
+
 		if (isRegExp(searchString)) {
-			throw new TypeError("First argument to String.prototype.includes must not be a regular expression");
+			throw TypeError("First argument to String.prototype.includes must not be a regular expression");
 		}
 
 		let searchValue = yield toString(searchString);

@@ -1,4 +1,3 @@
-import {execute as exec} from "../utils/func";
 import * as contracts from "../utils/contracts";
 import {each} from "../utils/async";
 import {toPropertyKey} from "../utils/native";
@@ -9,14 +8,14 @@ function setDescriptor (env, obj, descriptor) {
 	if (descriptor.get) {
 		contracts.assertAreValidArguments(descriptor.get.node.params, strict);
 		descriptor.getter = function* () {
-			return yield exec(env, descriptor.get, [], this, descriptor.get.node);
+			return yield descriptor.get.call(this);
 		};
 	}
 
 	if (descriptor.set) {
 		contracts.assertAreValidArguments(descriptor.set.node.params, strict);
-		descriptor.setter = function* () {
-			yield exec(env, descriptor.set, arguments, this, descriptor.set.node);
+		descriptor.setter = function* (value) {
+			yield descriptor.set.call(this, [value]);
 		};
 	}
 
@@ -45,8 +44,8 @@ export default function* ObjectExpression (context) {
 		switch (property.kind) {
 			case "get":
 			case "set":
-				descriptors[name] = descriptors[name] || createDescriptor(key);
-				descriptors[name][property.kind] = value;
+				descriptors[key] = descriptors[key] || createDescriptor(key);
+				descriptors[key][property.kind] = value;
 				break;
 
 			default:

@@ -26,4 +26,15 @@ export default function (globalObject, env, factory) {
 
 		return factory.createPrimitive(stringValue.replace(this.node.source, replacer));
 	}, 2, "RegExp.prototype[Symbol.replace]"));
+
+	["source", "global", "ignoreCase", "multiline"].forEach(key => {
+		let source = RegExp.prototype;
+		let getter = function () { return factory.createPrimitive(source[key]); };
+		let getterFunc = factory.createGetter(getter, key);
+
+		proto.define(key, null, {
+			getter: getter,
+			get: getterFunc
+		});
+	});
 }

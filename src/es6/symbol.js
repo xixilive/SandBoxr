@@ -8,7 +8,7 @@ export default function (globalObject, env, factory) {
 
 	let symbolClass = factory.createFunction(function* (desc) {
 		if (this.isNew) {
-			throw new TypeError("Symbol is not a constructor");
+			throw TypeError("Symbol is not a constructor");
 		}
 
 		let descString = yield toString(desc);

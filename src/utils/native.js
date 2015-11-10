@@ -25,7 +25,7 @@ function* getString (value) {
 		return String(primitiveValue.value);
 	}
 
-	throw new TypeError("Cannot convert object to primitive value.");
+	throw TypeError("Cannot convert object to primitive value.");
 }
 
 function* getPrimitive (value) {
@@ -47,7 +47,7 @@ function* getPrimitive (value) {
 		return primitiveValue.toNative();
 	}
 
-	throw new TypeError("Cannot convert object to primitive value.");
+	throw TypeError("Cannot convert object to primitive value.");
 }
 
 function* getValues (args) {
@@ -70,7 +70,7 @@ export function primitiveToObject (env, value) {
 export function	toObject (env, obj, throwOnError) {
 	// todo: is this ES6 only?
 	if (throwOnError && obj.isPrimitive && obj.value == null) {
-		throw new TypeError(`${obj.type} cannot be converted to an object`);
+		throw TypeError(`${obj.type} cannot be converted to an object`);
 	}
 
 	if (obj.isPrimitive && obj.value != null && obj.type !== "object") {
@@ -138,7 +138,7 @@ export function* toPrimitive (obj, preferredType) {
 	}
 
 	if (obj && obj.isSymbol) {
-		throw new TypeError(`Cannot convert Symbol to a ${preferredType}`);
+		throw TypeError(`Cannot convert Symbol to a ${preferredType}`);
 	}
 
 	if (preferredType === "string") {
@@ -198,10 +198,14 @@ export function	toBoolean (obj) {
 
 export function	toNativeFunction (env, fn, name) {
 	return env.objectFactory.createBuiltInFunction(function* () {
-		let scope = this && this.node && this.node.toNative();
-		let args = yield getValues(arguments);
+		let thisArg = undefined;
 
-		let value = fn.apply(scope, args);
+		if (this && this.node && (this.node.isPrimitive || this.node.className === "Date")) {
+			thisArg = this.node.toNative();
+		}
+
+		let args = yield getValues(arguments);
+		let value = fn.apply(thisArg, args);
 		return env.objectFactory.createPrimitive(value);
 	}, fn.length, name);
 }

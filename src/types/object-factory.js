@@ -56,6 +56,7 @@ export class ObjectFactory {
 	constructor (env) {
 		this.env = env;
 		this.options = env.options;
+		this.ecmaVersion = env.options.ecmaVersion || 5;
 	}
 
 	init () {
@@ -147,7 +148,7 @@ export class ObjectFactory {
 				break;
 
 			default:
-				throw new Error("Not a primitive: " + value);
+				throw Error("Not a primitive: " + value);
 		}
 
 		instance.init(this.env);
@@ -199,11 +200,11 @@ export class ObjectFactory {
 		contracts.assertIsObject(handler, "Proxy");
 
 		if (target.isProxy && target.revoked) {
-			throw new TypeError();
+			throw TypeError();
 		}
 
 		if (handler.isProxy && handler.revoked) {
-			throw new TypeError();
+			throw TypeError();
 		}
 
 		let instance = new ProxyType(target, handler);
@@ -229,6 +230,11 @@ export class ObjectFactory {
 				value: callee,
 				writable: true
 			});
+		}
+
+		let stringTagKey = SymbolType.getByKey("toStringTag");
+		if (stringTagKey) {
+			instance.define(stringTagKey, this.createPrimitive("Arguments"));
 		}
 
 		return instance;
@@ -311,7 +317,7 @@ export class ObjectFactory {
 	createBuiltInFunction (func, length, funcName) {
 		let instance = new NativeFunctionType(function () {
 			if (this.isNew) {
-				throw new TypeError(`${funcName} is not a constructor`);
+				throw TypeError(`${funcName} is not a constructor`);
 			}
 
 			return func.apply(this, arguments);
@@ -320,7 +326,8 @@ export class ObjectFactory {
 		setProto("Function", instance, this.env);
 		instance[Symbol.for("env")] = this.env;
 		instance.builtIn = true;
-		instance.defineOwnProperty("length", { value: this.createPrimitive(length), configurable: true });
+		instance.canConstruct = false;
+		instance.defineOwnProperty("length", { value: this.createPrimitive(length), configurable: this.ecmaVersion > 5 });
 
 		let match = functionNameMatcher.exec(funcName);
 		let name = match && match[1] || funcName;
@@ -337,7 +344,7 @@ export class ObjectFactory {
 		}
 
 		thrower = thrower || function () {
-			throw new TypeError(message);
+			throw TypeError(message);
 		};
 
 		// we want to keep the same instance of the throwers because there

@@ -1,4 +1,5 @@
 import {toBoolean} from "../utils/native";
+import {isNullOrUndefined} from "../utils/contracts";
 
 export default function* ForInStatement (context) {
 	let left;
@@ -14,6 +15,11 @@ export default function* ForInStatement (context) {
 	}
 
 	let obj = (yield context.create(context.node.right).execute()).result.getValue();
+
+	if (isNullOrUndefined(obj)) {
+		return context.empty();
+	}
+
 	let it = obj.getIterator(context.env);
 	let next = it.getValue("next");
 	let done = false;
@@ -33,7 +39,6 @@ export default function* ForInStatement (context) {
 
 		priorResult = result;
 	}
-
 
 	// track visited properties to prevent iterating over shadowed properties, regardless of enumerable flag
 	// 12.6.4 NOTE: a property of a prototype is not enumerated if it is “shadowed” because some previous

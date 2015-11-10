@@ -1,20 +1,21 @@
-import * as contracts from "../utils/contracts";
-import {toObject,toLength,toBoolean} from "../utils/native";
+import {toLength,toBoolean} from "../utils/native";
 import {UNDEFINED} from "../types/primitive-type";
 import {executeCallback} from "./array-helpers";
+import {assertIsNotNullOrUndefined,assertIsFunction} from "../utils/contracts";
 
 export default function ($target, env, factory) {
 	$target.define("findIndex", factory.createBuiltInFunction(function* (predicate, thisArg) {
-		let arr = toObject(this.node);
-		let length = yield toLength(arr);
+		assertIsNotNullOrUndefined(this.node, "Array.prototype.findIndex");
 
-		contracts.assertIsFunction(predicate, "predicate");
+		let length = yield toLength(this.node);
+
+		assertIsFunction(predicate, "predicate");
 
 		let i = 0;
 		while (i < length) {
-			let propInfo = arr.getProperty(i);
+			let propInfo = this.node.getProperty(i);
 			let value = propInfo ? propInfo.getValue() : UNDEFINED;
-			let passed = toBoolean(yield executeCallback(env, predicate, {key: i, value}, thisArg, arr));
+			let passed = toBoolean(yield executeCallback(env, predicate, {key: i, value}, thisArg, this.node));
 			if (passed) {
 				return factory.createPrimitive(i);
 			}

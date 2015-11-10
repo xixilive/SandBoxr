@@ -139,10 +139,11 @@ export class Environment {
 	/**
 	 * Creates a new declarative scope.
 	 * @param {ObjectType} [thisArg] - The `this` binding for the new scope.
+	 * @param {Boolean} [strict] - Indicates whether the scope is in strict mode.
 	 * @returns {Scope} The new scope.
 	 */
-	createScope (thisArg) {
-		return this.setScope(new DeclarativeEnvironment(this.current, thisArg, this));
+	createScope (thisArg, strict) {
+		return this.setScope(new DeclarativeEnvironment(this.current, thisArg, this, strict || this.isStrict()));
 	}
 
 	/**
@@ -150,10 +151,11 @@ export class Environment {
 	 * statement, as well as the global scope.
 	 * @param {ObjectType} obj - The object to bind the scope to.
 	 * @param {ObjectType} [thisArg] - The `this` binding for the new scope.
+	 * @param {Boolean} [strict] - Indicates whether the scope is in strict mode.
 	 * @returns {Scope} The new scope.
 	 */
-	createObjectScope (obj, thisArg) {
-		return this.setScope(new ObjectEnvironment(this.current, obj, thisArg, this));
+	createObjectScope (obj, thisArg, strict) {
+		return this.setScope(new ObjectEnvironment(this.current, obj, thisArg, this, strict || this.isStrict()));
 	}
 
 	createExecutionScope (fn, thisArg) {
@@ -169,7 +171,7 @@ export class Environment {
 			thisArg = this.getThisBinding();
 		}
 
-		let scope = this.createScope(thisArg, priorScope);
+		let scope = this.createScope(thisArg);
 		scope.priorScope = priorScope;
 		return scope;
 	}

@@ -12,7 +12,7 @@ export default function (target, env, factory) {
 			formValue = yield toString(form);
 
 			if (!(/^NFK?(?:C|D)$/).test(formValue)) {
-				throw new RangeError();
+				throw RangeError("Supported forms are NFC, NFD, NFKC, or NFKD");
 			}
 		}
 

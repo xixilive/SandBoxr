@@ -10,49 +10,49 @@ const useStrictPattern = /^\s*(?:'use strict'|"use strict")\s*;?\s*$/;
 
 export function assertIsObject (obj, methodName) {
 	if (!isObject(obj)) {
-		throw new TypeError(`${methodName} called on non-object`);
+		throw TypeError(`${methodName} called on non-object`);
 	}
 }
 
 export function assertIsNotNullOrUndefined (value, methodName) {
 	if (isNullOrUndefined(value)) {
-		throw new TypeError(`${methodName} called on null or undefined`);
+		throw TypeError(`${methodName} called on null or undefined`);
 	}
 }
 
 export function assertArgIsNotNullOrUndefined (obj) {
 	if (isNullOrUndefined(obj)) {
-		throw new TypeError("Cannot convert null or undefined to object");
+		throw TypeError("Cannot convert null or undefined to object");
 	}
 }
 
 export function	assertIsFunction (obj, argName) {
 	if (!isFunction(obj)) {
-		throw new TypeError(`${argName} is not a function`);
+		throw TypeError(`${argName} is not a function`);
 	}
 }
 
 export function	assertIsNotConstructor (context, methodName) {
 	if (context.isNew) {
-		throw new TypeError(`${methodName} is not a constructor`);
+		throw TypeError(`${methodName} is not a constructor`);
 	}
 }
 
 export function assertIsConstructor (context, methodName) {
 	if (!context.isNew) {
-		throw new TypeError(`${methodName} must be called with 'new'`);
+		throw TypeError(`${methodName} must be called with 'new'`);
 	}
 }
 
 export function	assertIsValidArrayLength (length) {
 	if (!isValidArrayLength(length)) {
-		throw new RangeError("Invalid array length");
+		throw RangeError("Invalid array length");
 	}
 }
 
 export function assertIsValidAssignment (left, strict) {
 	if (left && !left.isReference) {
-		throw new ReferenceError("Invalid left-hand side in assignment");
+		throw ReferenceError("Invalid left-hand side in assignment");
 	}
 
 	if (left && left.base === left.env.global) {
@@ -62,7 +62,7 @@ export function assertIsValidAssignment (left, strict) {
 
 export function	assertIsValidParameterName (name, strict) {
 	if (/^\d|[;\(\)"']/.test(name)) {
-		throw new SyntaxError(`Unexpected token in ${name}`);
+		throw SyntaxError(`Unexpected token in ${name}`);
 	}
 
 	assertIsValidName(name, strict);
@@ -70,23 +70,23 @@ export function	assertIsValidParameterName (name, strict) {
 
 export function assertIsValidName (name, strict) {
 	if (strict && (name === "arguments" || name === "eval")) {
-		throw new SyntaxError("Unexpected eval or arguments in strict mode");
+		throw SyntaxError("Unexpected eval or arguments in strict mode");
 	}
 }
 
 export function	assertIsNotGeneric (obj, expectedClass, methodName) {
 	if (!obj || obj.className !== expectedClass) {
-		throw new TypeError(`${methodName} is not generic`);
+		throw TypeError(`${methodName} is not generic`);
 	}
 }
 
 export function assertIsValidIdentifier (name, strict) {
 	if (isReserved(name)) {
-		throw new SyntaxError(`Illegal use of reserved keyword: ${name}`);
+		throw SyntaxError(`Illegal use of reserved keyword: ${name}`);
 	}
 
 	if (strict && isStrictReserved(name)) {
-		throw new SyntaxError(`Illegal use of strict mode reserved keyword: ${name}`);
+		throw SyntaxError(`Illegal use of strict mode reserved keyword: ${name}`);
 	}
 }
 
@@ -96,7 +96,7 @@ export function assertAreValidArguments (params, strict) {
 
 		if (strict) {
 			if (params.some((p, i) => index !== i && param.name === p.name)) {
-				throw new SyntaxError("Strict mode function may not have duplicate parameter names");
+				throw SyntaxError("Strict mode function may not have duplicate parameter names");
 			}
 		}
 	});
@@ -198,11 +198,7 @@ export function isConstructor (obj) {
 		return false;
 	}
 
-	if (obj.arrow || obj.builtIn) {
-		return false;
-	}
-
-	return true;
+	return obj.canConstruct;
 }
 
 export function	isInteger (value) {

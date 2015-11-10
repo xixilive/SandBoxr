@@ -34,7 +34,7 @@ function getValueOrDefault (obj, key, defaultValue = UNDEFINED, transformer = v 
 
 function normalizeKey (env, key) {
 	if (typeof key !== "object") {
-		return env.objectFactory.createPrimitive(key);
+		return env.objectFactory.createPrimitive(String(key));
 	}
 
 	return key;
@@ -80,12 +80,12 @@ function toCall (proxy, methodName) {
 
 function assertIsNotRevoked (proxy, methodName) {
 	if (proxy.revoked) {
-		throw new TypeError(`Method ${methodName} called on a revoked Proxy object`);
+		throw TypeError(`Method ${methodName} called on a revoked Proxy object`);
 	}
 }
 
 function throwProxyInvariantError (methodName) {
-	throw new TypeError(`Invariant check failed for proxy ${methodName} trap`);
+	throw TypeError(`Invariant check failed for proxy ${methodName} trap`);
 }
 
 export class ProxyType extends ObjectType {

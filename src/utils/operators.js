@@ -172,7 +172,7 @@ const ops = {
 		a = yield toPropertyKey(a);
 		if (b.isPrimitive) {
 			let bString = yield toString(b);
-			throw new TypeError(`Cannot use 'in' operator to search for '${a}' in ${bString}`);
+			throw TypeError(`Cannot use 'in' operator to search for '${a}' in ${bString}`);
 		}
 
 		return b.has(a);
@@ -180,7 +180,7 @@ const ops = {
 
 	["instanceof"] (a, b) {
 		if (b.type !== "function") {
-			throw new TypeError(`Expecting a function in instanceof check, but got ${b.type}`);
+			throw TypeError(`Expecting a function in instanceof check, but got ${b.type}`);
 		}
 
 		if (a.isPrimitive) {

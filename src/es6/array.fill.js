@@ -13,7 +13,7 @@ export default function ($target, env, factory) {
 		final = normalizeIndex(final, length);
 
 		while (k < final) {
-			arr.setValue(k++, value, true, env);
+			arr.setValue(k++, value);
 		}
 
 		return arr;

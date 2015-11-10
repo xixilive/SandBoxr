@@ -17,7 +17,7 @@ export default function ($target, env, factory) {
 
 		if (!hasIterator) {
 			let length = yield toLength(source);
-			args.push(length);
+			args.push(factory.createPrimitive(length));
 		}
 
 		return yield ctor.construct(ctor, args);
@@ -28,7 +28,7 @@ export default function ($target, env, factory) {
 
 		let mapper;
 		if (isUndefined(mapFn)) {
-			mapper = function (v) { return v; };
+			mapper = v => v;
 		} else {
 			assertIsFunction(mapFn, "mapFn");
 			mapper = function* (v, i) {
@@ -37,8 +37,8 @@ export default function ($target, env, factory) {
 		}
 
 		let arr = yield createArray(this.node, items);
-		let it = iterate.getIterator(env, items);
-		let index = 0;
+		let it = iterate.getIterator(items);
+		let length = 0;
 		let done = false;
 
 		while (!done) {
@@ -47,8 +47,9 @@ export default function ($target, env, factory) {
 				({done, value: current} = it.next());
 
 				if (!done) {
-					let value = yield mapper(current.value || UNDEFINED, index);
-					arr.setValue(index++, value);
+					let value = yield mapper(current.value || UNDEFINED, current.key);
+					arr.setValue(current.key, value);
+					length = current.key + 1;
 				}
 			} catch (err) {
 				if ("return" in it) {
@@ -59,7 +60,7 @@ export default function ($target, env, factory) {
 			}
 		}
 
-		arr.setValue("length", factory.createPrimitive(index), true, env);
+		arr.setValue("length", factory.createPrimitive(length));
 		return arr;
 	}, 1, "Array.from"));
 }

@@ -27,10 +27,10 @@ export default function ($global, env, factory) {
 			let setter = instance.getValue("set");
 			assertIsFunction(setter, "set");
 
-			let it = iterate.getIterator(env, iterable);
+			let it = iterate.getIterator(iterable);
 			yield it.each(function* (item) {
 				assertIsObject(item, "Map");
-				
+
 				let key = item.getValue("0") || UNDEFINED;
 				let value = item.getValue("1") || UNDEFINED;
 				yield setter.call(instance, [key, value]);

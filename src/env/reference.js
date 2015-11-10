@@ -18,7 +18,7 @@ export class Reference {
 	 */
 	getValue () {
 		if (!this.base) {
-			throw new ReferenceError(`${this.key} is not defined`);
+			throw ReferenceError(`${this.key} is not defined`);
 		}
 
 		return this.base.getValue(this.key, this.strict);
@@ -32,7 +32,7 @@ export class Reference {
 	setValue (value) {
 		if (this.base) {
 			if (!this.base.setValue(this.key, value) && this.strict) {
-				throw new TypeError();
+				throw TypeError();
 			}
 
 			return true;
@@ -42,7 +42,7 @@ export class Reference {
 		contracts.assertIsValidIdentifier(this.key, this.strict);
 
 		if (this.strict) {
-			throw new ReferenceError(`${this.key} is not defined`);
+			throw ReferenceError(`${this.key} is not defined`);
 		}
 
 		return this.env.global.defineOwnProperty(this.key, {

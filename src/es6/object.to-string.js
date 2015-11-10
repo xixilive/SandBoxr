@@ -1,4 +1,4 @@
-import * as contracts from "../utils/contracts";
+import {isNullOrUndefined,assertIsNotNullOrUndefined} from "../utils/contracts";
 import {SymbolType} from "../types/symbol-type";
 
 export default function (target, env, factory) {
@@ -7,7 +7,7 @@ export default function (target, env, factory) {
 	function objectToString (obj) {
 		let tag = obj.className;
 
-		if (!contracts.isNullOrUndefined(obj)) {
+		if (!isNullOrUndefined(obj)) {
 			let tagProperty = obj.getProperty(stringTagKey);
 			if (tagProperty) {
 				let tagValue = tagProperty.getValue();
@@ -25,7 +25,7 @@ export default function (target, env, factory) {
 	}, 0, "Object.prototype.toString"));
 
 	target.define("toLocaleString", factory.createBuiltInFunction(function () {
-		contracts.assertIsNotNullOrUndefined(this.node, "Object.prototype.toLocaleString");
+		assertIsNotNullOrUndefined(this.node, "Object.prototype.toLocaleString");
 		return objectToString(this.node);
 	}, 0, "Object.prototype.toLocaleString"));
 }

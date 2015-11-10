@@ -5,7 +5,6 @@ import IterableIterator from "./iterable-iterator";
 import {SymbolType} from "../types/symbol-type";
 import {toLength} from "../utils/native";
 import {exhaust as x} from "../utils/async";
-import {execute as exec} from "../utils/func";
 import "../polyfills";
 
 const SPARE_ARRAY_DENSITY = 0.8;
@@ -19,7 +18,7 @@ function arrayIsSparse (arr, length) {
 }
 
 const iterate = {
-	getIterator (env, obj) {
+	getIterator (obj) {
 		let iteratorKey = SymbolType.getByKey("iterator");
 		let iterator = obj.getProperty(iteratorKey);
 		if (iterator) {
@@ -29,13 +28,13 @@ const iterate = {
 		}
 
 		let length = x(toLength(obj));
-		return this.forward(env, obj, 0, length);
+		return this.forward(obj, 0, length);
 	},
 
-	forward (env, obj, lo, hi) {
+	forward (obj, lo, hi) {
 		// string will never be dense
 		if (obj.className === "String") {
-			return StringIterator.create(env.objectFactory, obj, lo);
+			return StringIterator.create(obj, lo);
 		}
 
 		if (arrayIsSparse(obj, hi)) {
@@ -45,12 +44,12 @@ const iterate = {
 		return ArrayIterator.create(obj, lo, hi);
 	},
 
-	reverse (env, obj, hi, lo = 0) {
+	reverse (obj, hi, lo = 0) {
 		if (obj.className === "String") {
-			return StringIterator.create(env.objectFactory, obj, hi, true);
+			return StringIterator.create(obj, hi, true);
 		}
 
-		if (arrayIsSparse(obj, hi)) {
+		if (obj.className !== "Array" || arrayIsSparse(obj, hi)) {
 			return SparseIterator.create(obj, lo, hi, true);
 		}
 

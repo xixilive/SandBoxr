@@ -1,5 +1,6 @@
 import {ObjectType} from "./object-type";
 import {PropertyDescriptor} from "./property-descriptor";
+import {UNDEFINED} from "./primitive-type";
 import * as contracts from "../utils/contracts";
 
 function getParameterLength (params) {
@@ -22,6 +23,7 @@ export class FunctionType extends ObjectType {
 		this.node = node;
 
 		this.arrow = node && node.type === "ArrowFunctionExpression";
+		this.canConstruct = !this.arrow;
 
 		this.boundScope = null;
 		this.boundThis = null;
@@ -63,12 +65,15 @@ export class FunctionType extends ObjectType {
 				return executionResult.result;
 			}
 
-			return undefined;
+			return UNDEFINED;
 		});
 	}
 
 	*construct (thisArg, args = [], callee) {
-		thisArg = thisArg || this[Symbol.for("env")].objectFactory.createObject(this);
+		if (!thisArg || thisArg === this) {
+			thisArg = this[Symbol.for("env")].objectFactory.createObject(this);
+		}
+
 		let result = yield this.call(thisArg, args, callee);
 		if (result && !result.isPrimitive) {
 			return result;
@@ -126,7 +131,7 @@ export class FunctionType extends ObjectType {
 
 		let proto = this.getValue("prototype");
 		if (contracts.isNullOrUndefined(proto) || !contracts.isObject(proto)) {
-			throw new TypeError("Function has non-object prototype in instanceof check");
+			throw TypeError("Function has non-object prototype in instanceof check");
 		}
 
 		while (current) {

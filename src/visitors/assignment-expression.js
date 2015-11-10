@@ -12,8 +12,9 @@ export default function* AssignmentExpression (context) {
 		// remove equals
 		let op = context.node.operator.slice(0, -1);
 
-		let nativeValue = yield context.env.ops[op](left.getValue(), right.getValue());
-		left.setValue(context.env.objectFactory.createPrimitive(nativeValue));
+		let nativeValue = yield context.env.ops[op](left.getValue(), rightValue);
+		rightValue = context.env.objectFactory.createPrimitive(nativeValue);
+		left.setValue(rightValue, context.env.isStrict());
 	}
 
 	return context.result(rightValue);

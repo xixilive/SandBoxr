@@ -14,7 +14,7 @@ import {SymbolType} from "../types/symbol-type";
 
 export default function (env) {
 	ecma5(env);
-	
+
 	let objectFactory = env.objectFactory;
 	let $global = env.global;
 
@@ -42,7 +42,7 @@ export default function (env) {
 
 		if (ctor.owns("prototype")) {
 			let proto = ctor.getValue("prototype");
-			proto.define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
+			// proto.define(stringTagKey, objectFactory.createPrimitive(typeName), { writable: false });
 
 			// prototypes in ES6 can't be coerced into primitives
 			proto.className = "Object";

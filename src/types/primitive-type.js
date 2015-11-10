@@ -15,7 +15,7 @@ export class PrimitiveType extends ObjectType {
 	getProperty (name) {
 		// can't read properties of null/undefined
 		if (this.value == null) {
-			throw new TypeError(`Cannot read property '${name}' of ${this.type}`);
+			throw TypeError(`Cannot read property '${name}' of ${this.type}`);
 		}
 
 		return super.getProperty(...arguments);

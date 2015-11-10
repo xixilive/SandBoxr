@@ -1,8 +1,9 @@
-import {toPrimitive,toNumber,primitiveToObject} from "../../utils/native";
-import * as contracts from "../../utils/contracts";
+import {toPrimitive,primitiveToObject} from "../../utils/native";
+import {assertIsNotGeneric} from "../../utils/contracts";
 
-const constants = ["MAX_VALUE", "MIN_VALUE", "NaN", "NEGATIVE_INFINITY", "POSITIVE_INFINITY"];
-const protoMethods = ["toExponential", "toPrecision", "toLocaleString"];
+import $toFixed from "./number.to-fixed";
+import $toString from "./number.to-string";
+import $valueOf from "./number.value-of";
 
 export default function numberApi (env) {
 	const globalObject = env.global;
@@ -22,46 +23,20 @@ export default function numberApi (env) {
 		return objectFactory.create("Number", numberValue);
 	}, proto, { configurable: false, enumerable: false, writable: false });
 
-	proto.define("toString", objectFactory.createBuiltInFunction(function* (radix) {
-		contracts.assertIsNotGeneric(this.node, "Number", "Number.prototype.toString");
-
-		let radixValue = 10;
-		if (radix) {
-			radixValue = yield toPrimitive(radix, "number");
-			if (radixValue < 2 || radixValue > 36) {
-				return this.raise(new RangeError("toString() radix argument must be between 2 and 36"));
-			}
-		}
-
-		return objectFactory.createPrimitive(this.node.value == null ? "0" : this.node.value.toString(radixValue));
-	}, 1, "Number.prototype.toString"));
-
-	proto.define("toFixed", objectFactory.createBuiltInFunction(function* (fractionDigits) {
-		contracts.assertIsNotGeneric(this.node, "Number", "Number.prototype.toFixed");
-
-		let digits = 0;
-		if (fractionDigits) {
-			digits = yield toNumber(fractionDigits);
-		}
-
-		return objectFactory.createPrimitive(Number.prototype.toFixed.call(this.node.value, digits));
-	}, 1, "Number.prototype.toFixed"));
-
-	proto.define("valueOf", objectFactory.createBuiltInFunction(function () {
-		contracts.assertIsNotGeneric(this.node, "Number", "Number.prototype.valueOf");
-		return objectFactory.createPrimitive(this.node.value == null ? 0 : this.node.value);
-	}, 0, "Number.prototype.valueOf"));
-
-	constants.forEach(name => {
+	["MAX_VALUE", "MIN_VALUE", "NaN", "NEGATIVE_INFINITY", "POSITIVE_INFINITY"].forEach(name => {
 		numberClass.define(name, objectFactory.createPrimitive(Number[name]), { configurable: false, enumerable: false, writable: false });
 	});
 
-	protoMethods.forEach(name => {
+	$toFixed(proto, env, objectFactory);
+	$toString(proto, env, objectFactory);
+	$valueOf(proto, env, objectFactory);
+
+	["toExponential", "toPrecision", "toLocaleString"].forEach(name => {
 		let fn = Number.prototype[name];
 		if (fn) {
 			let methodName = `Number.prototype.${name}`;
 			proto.define(name, objectFactory.createBuiltInFunction(function () {
-				contracts.assertIsNotGeneric(this.node, "Number", methodName);
+				assertIsNotGeneric(this.node, "Number", methodName);
 				return objectFactory.createPrimitive(fn.call(this.node.value));
 			}, fn.length, methodName));
 		}

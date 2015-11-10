@@ -1,3 +1,4 @@
+import {areSame} from "../utils/operators";
 import {PropertyDescriptor} from "./property-descriptor";
 const integerMatcher = /^\n+$/;
 
@@ -175,10 +176,22 @@ export class ObjectType {
 				descriptor = receiverDescriptor;
 			}
 
+			if (descriptor.hasValue() && areSame(descriptor.getValue(), value)) {
+				return true;
+			}
+
+			if (!descriptor.canSetValue()) {
+				return false;
+			}
+
 			if (!descriptor.dataProperty) {
 				descriptor.bind(receiver);
 				descriptor.setValue(value);
 				return true;
+			}
+
+			if (!descriptor.canUpdate({ value })) {
+				return false;
 			}
 
 			if (!receiver.owns(key)) {
@@ -188,10 +201,6 @@ export class ObjectType {
 					enumerable: true,
 					writable: true
 				}, false);
-			}
-
-			if (!descriptor.canUpdate({ value })) {
-				return false;
 			}
 
 			descriptor.setValue(value);
@@ -206,42 +215,42 @@ export class ObjectType {
 		}, false);
 	}
 
-	putValue (key, value, throwOnError) {
-		if (this.isPrimitive) {
-			return;
-		}
+	// putValue (key, value, throwOnError) {
+	// 	if (this.isPrimitive) {
+	// 		return;
+	// 	}
 
-		let descriptor = this.getProperty(key);
-		if (descriptor) {
-			if (!descriptor.canSetValue()) {
-				if (throwOnError) {
-					throw new TypeError(`Cannot assign to read only property '${key}'`);
-				}
+	// 	let descriptor = this.getProperty(key);
+	// 	if (descriptor) {
+	// 		if (!descriptor.canSetValue()) {
+	// 			if (throwOnError) {
+	// 				throw TypeError(`Cannot assign to read only property '${key}'`);
+	// 			}
 
-				return;
-			}
+	// 			return;
+	// 		}
 
-			if (descriptor.dataProperty && !this.owns(key)) {
-				this[getPropertySource(key)][String(key)] = new PropertyDescriptor(this, {
-					value: value,
-					configurable: descriptor.configurable,
-					enumerable: descriptor.enumerable,
-					writable: descriptor.writable
-				}, key);
+	// 		if (descriptor.dataProperty && !this.owns(key)) {
+	// 			this[getPropertySource(key)][String(key)] = new PropertyDescriptor(this, {
+	// 				value: value,
+	// 				configurable: descriptor.configurable,
+	// 				enumerable: descriptor.enumerable,
+	// 				writable: descriptor.writable
+	// 			}, key);
 
-				this.version++;
-			} else {
-				descriptor.setValue(value);
-			}
-		} else {
-			this.defineOwnProperty(key, { value: value, configurable: true, enumerable: true, writable: true }, throwOnError);
-		}
-	}
+	// 			this.version++;
+	// 		} else {
+	// 			descriptor.setValue(value);
+	// 		}
+	// 	} else {
+	// 		this.defineOwnProperty(key, { value: value, configurable: true, enumerable: true, writable: true }, throwOnError);
+	// 	}
+	// }
 
 	defineOwnProperty (key, descriptor, throwOnError) {
 		if (this.isPrimitive) {
 			if (throwOnError) {
-				throw new TypeError(`Cannot define property: ${key}, object is not extensible`);
+				throw TypeError(`Cannot define property: ${key}, object is not extensible`);
 			}
 
 			return false;
@@ -255,13 +264,13 @@ export class ObjectType {
 			}
 
 			if (throwOnError) {
-				throw new TypeError(`Cannot redefine property: ${key}`);
+				throw TypeError(`Cannot redefine property: ${key}`);
 			}
 
 			return false;
 		} else if (!this.extensible) {
 			if (throwOnError) {
-				throw new TypeError(`Cannot define property: ${key}, object is not extensible`);
+				throw TypeError(`Cannot define property: ${key}, object is not extensible`);
 			}
 
 			return false;
@@ -283,7 +292,7 @@ export class ObjectType {
 		if (key in this[source]) {
 			if (!this[source][key].configurable) {
 				if (throwOnError) {
-					throw new TypeError(`Cannot delete property: ${key}`);
+					throw TypeError(`Cannot delete property: ${key}`);
 				}
 
 				return false;

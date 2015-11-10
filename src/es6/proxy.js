@@ -1,7 +1,7 @@
 export default function (globalObject, env, factory) {
 	let proxyClass = factory.createFunction(function (target, handler) {
 		if (!this.isNew) {
-			throw new TypeError();
+			throw TypeError();
 		}
 
 		return factory.createProxy(target, handler);

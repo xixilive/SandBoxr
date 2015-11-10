@@ -18,7 +18,7 @@ export function* assign (env, leftNode, rightValue) {
 		case "Identifier":
 		case "MemberExpression":
 			let left = (yield env.createExecutionContext(leftNode).execute()).result;
-			left.setValue(rightValue);
+			left.setValue(rightValue, env.isStrict());
 			break;
 
 		default:
@@ -43,7 +43,7 @@ function* destructure (env, leftNode, rightValue, cb) {
 			break;
 
 		default:
-			throw new Error(`${leftNode.type} not implemented`);
+			throw Error(`${leftNode.type} not implemented`);
 	}
 }
 

@@ -1,5 +1,6 @@
-import * as ops from "../utils/operators";
+import {areSame} from "../utils/operators";
 import {exhaust as x} from "../utils/async";
+import {owns} from "../utils/object";
 
 const defaultDescriptor = {
 	configurable: false,
@@ -34,7 +35,7 @@ export class PropertyDescriptor {
 
 	update (descriptor) {
 		for (let prop in descriptor) {
-			if (descriptor.hasOwnProperty(prop)) {
+			if (owns(descriptor, prop)) {
 				this[prop] = descriptor[prop];
 			}
 		}
@@ -77,7 +78,7 @@ export class PropertyDescriptor {
 					return false;
 				}
 
-				return !("value" in descriptor) || ops.areSame(this.value, descriptor.value);
+				return !("value" in descriptor) || areSame(this.value, descriptor.value);
 			}
 
 			return true;
@@ -106,7 +107,7 @@ export class PropertyDescriptor {
 		return undefined;
 	}
 
-	canSetValue () {
+	canSetValue (value) {
 		return this.writable || !!this.setter;
 	}
 
@@ -120,5 +121,9 @@ export class PropertyDescriptor {
 		} else if (this.setter) {
 			x(this.setter.call(this.base, value));
 		}
+	}
+
+	hasValue () {
+		return !!this.value || !!this.getter;
 	}
 }

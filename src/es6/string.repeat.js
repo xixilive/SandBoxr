@@ -4,11 +4,11 @@ import {assertIsNotNullOrUndefined} from "../utils/contracts";
 export default function (target, env, factory) {
 	target.define("repeat", factory.createBuiltInFunction(function* (count) {
 		assertIsNotNullOrUndefined(this.node, "String.prototype.repeat");
-		
+
 		let stringValue = yield toString(this.node);
 		let countValue = yield toInteger(count);
 		if (countValue < 0 || !isFinite(countValue)) {
-			throw new RangeError("Invalid count value");
+			throw RangeError("Invalid count value");
 		}
 
 		let returnValue = "";

@@ -20,11 +20,10 @@ export default function ($target, env, factory) {
 		}
 
 		while (count > 0) {
-			let current = arr.getProperty(from);
-			if (current) {
-				arr.setValue(to, current.getValue(), true, env);
+			if (arr.has(from)) {
+				arr.setValue(to, arr.getValue(from));
 			} else {
-				arr.deleteProperty(to);
+				arr.deleteProperty(to, true);
 			}
 
 			from += dir;

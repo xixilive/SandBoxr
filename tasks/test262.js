@@ -64,8 +64,9 @@ gulp.task("test262-6", function () {
 	//	- Map -11 (needs WeakMap)
 	//	- MapIterator +
 	//	- Set -8 (needs WeakSet)
+	//	- SetIterator +
 
-	return streamer6({ files: ["/built-ins/SetIteratorPrototype/**/*.js"] })
+	return streamer6({ files: ["/built-ins/string/**/*.js"] })
 		.pipe(through.obj(function (file, enc, cb) {
 			let filename = path.basename(file.path);
 
@@ -121,7 +122,8 @@ gulp.task("test262-6", function () {
 });
 
 gulp.task("test262", () => {
-	return test262({ files: ["ch15/15.3/**/*.js", "!ch15/15.1/**/*.js", "!intl402/**/*.js"] })
+	// "!ch15/15.1/**/*.js", 
+	return test262({ files: ["**/*.js", "!intl402/**/*.js"] })
 		.pipe(through.obj((file, enc, cb) => {
 			let filename = path.basename(file.path);
 			let src = file.contents.toString();

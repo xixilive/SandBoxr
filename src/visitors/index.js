@@ -82,7 +82,7 @@ const visitors = {
 export default {
 	*visit (context) {
 		if (!(context.node.type in visitors)) {
-			throw new TypeError("No handler defined for: " + context.node.type);
+			throw TypeError(`No handler defined for: ${context.node.type}`);
 		}
 
 		return yield visitors[context.node.type](context);

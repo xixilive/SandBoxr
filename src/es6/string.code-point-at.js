@@ -1,5 +1,5 @@
 import {UNDEFINED} from "../types/primitive-type";
-import {toInteger} from "../utils/native";
+import {toInteger,toString} from "../utils/native";
 import {assertIsNotNullOrUndefined} from "../utils/contracts";
 
 export default function (target, env, factory) {
