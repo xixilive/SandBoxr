@@ -4,8 +4,7 @@ const constants = ["E", "LN10", "LN2", "LOG10E", "LOG2E", "PI", "SQRT1_2", "SQRT
 const methods = ["abs", "acos", "asin", "atan", "atan2", "ceil", "cos", "exp", "floor", "log", "max", "min", "pow", "random", "round", "sin", "sqrt", "tan"];
 
 export default function mathApi (env) {
-	const globalObject = env.global;
-	const objectFactory = env.objectFactory;
+	const { global: globalObject, objectFactory } = env;
 
 	let mathClass = objectFactory.createObject();
 	mathClass.className = "Math";

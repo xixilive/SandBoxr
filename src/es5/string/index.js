@@ -14,7 +14,7 @@ import $trim from "./string.trim";
 import $valueOf from "./string.value-of";
 
 export default function (env) {
-	const {global: globalObject, objectFactory} = env;
+	const { global: globalObject, objectFactory } = env;
 
 	function* getString (value, isNew) {
 		if (!value) {

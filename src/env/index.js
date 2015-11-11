@@ -6,7 +6,7 @@ import {Reference} from "./reference";
 import es5 from "../es5";
 import es6 from "../es6";
 import operators from "../utils/operators";
-import * as contracts from "../utils/contracts";
+import {assertIsValidIdentifier} from "../utils/contracts";
 import {Scope} from "./scope";
 
 let defaultOptions = {
@@ -90,7 +90,7 @@ export class Environment {
 	 * @returns {PropertyDescriptor} The property descriptor for the new variabble.
 	 */
 	createVariable (key, immutable) {
-		contracts.assertIsValidIdentifier(key, this.isStrict());
+		assertIsValidIdentifier(key, this.isStrict());
 		return this.current.scope.createVariable(key, !immutable);
 	}
 

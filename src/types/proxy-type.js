@@ -1,7 +1,6 @@
 import {ObjectType} from "./object-type";
 import {UNDEFINED} from "./primitive-type";
 import * as contracts from "../utils/contracts";
-// import {execute as exec} from "../utils/func";
 import {exhaust as x} from "../utils/async";
 import {toBoolean,toArray} from "../utils/native";
 import {PropertyDescriptor} from "./property-descriptor";

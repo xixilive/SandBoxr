@@ -3,26 +3,26 @@ import {isSpreadable} from "./array-helpers";
 
 export default function ($target, env, factory) {
 	$target.define("concat", factory.createBuiltInFunction(function* (...arrays) {
-		let newArray = factory.create("Array");
+		let newArray = factory.createArray();
 
 		// add "this" array to bunch
 		arrays.unshift(toObject(env, this.node));
 
-		let current, index = 0, i;
+		let index = 0;
 		while (arrays.length > 0) {
-			current = arrays.shift();
+			let current = arrays.shift();
 
 			if (isSpreadable(current)) {
 				let length = yield toLength(current);
-				for (i = 0; i < length; i++) {
+				for (let i = 0; i < length; i++) {
 					if (current.has(i)) {
-						newArray.setValue(index, current.getValue(i));
+						newArray.setIndex(index, current.getValue(i));
 					}
 
 					index++;
 				}
 			} else {
-				newArray.setValue(index++, current);
+				newArray.setIndex(index++, current);
 			}
 		}
 

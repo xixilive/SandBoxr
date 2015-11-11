@@ -1,4 +1,4 @@
-import * as contracts from "../utils/contracts";
+import {assertIsValidIdentifier} from "../utils/contracts";
 
 export class Reference {
 	constructor (key, base, env) {
@@ -39,7 +39,7 @@ export class Reference {
 		}
 
 		// check identifier before strict
-		contracts.assertIsValidIdentifier(this.key, this.strict);
+		assertIsValidIdentifier(this.key, this.strict);
 
 		if (this.strict) {
 			throw ReferenceError(`${this.key} is not defined`);

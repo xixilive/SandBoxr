@@ -1,4 +1,4 @@
-import * as contracts from "../utils/contracts";
+import {isInteger} from "../utils/contracts";
 import "../polyfills";
 
 const ASCENDING = (a, b) => a - b;
@@ -30,7 +30,7 @@ export default class SparseIterator {
 			this.version += current.version;
 
 			for (let name in current.properties) {
-				if (!(name in this.props) && contracts.isInteger(name)) {
+				if (!(name in this.props) && isInteger(name)) {
 					let index = Number(name);
 
 					if (index >= this.start && index <= this.end) {

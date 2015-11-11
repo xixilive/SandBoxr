@@ -6,7 +6,7 @@ import $test from "./regex.test";
 import $toString from "./regex.to-string";
 
 export default function (env) {
-	const {global: globalObject, objectFactory} = env;
+	const { global: globalObject, objectFactory } = env;
 
 	let proto = objectFactory.createObject();
 	proto.className = "RegExp";

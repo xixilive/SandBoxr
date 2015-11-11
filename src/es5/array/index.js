@@ -24,8 +24,7 @@ import $toString from "./array.to-string";
 import $unshift from "./array.unshift";
 
 export default function (env) {
-	const globalObject = env.global;
-	const objectFactory = env.objectFactory;
+	const { global: globalObject, objectFactory } = env;
 
 	let proto = objectFactory.createObject();
 	proto.className = "Array";
@@ -65,6 +64,6 @@ export default function (env) {
 	$sort(proto, env, objectFactory);
 	$toLocaleString(proto, env, objectFactory);
 	$toString(proto, env, objectFactory);
-	
+
 	globalObject.define("Array", arrayClass);
 }

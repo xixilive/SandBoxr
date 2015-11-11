@@ -21,7 +21,7 @@ import $toString from "./object.to-string";
 import $valueOf from "./object.value-of";
 
 export default function objectApi (env) {
-	const {global: globalObject, objectFactory} = env;
+	const { global: globalObject, objectFactory } = env;
 
 	let proto = new ObjectType();
 	let objectClass = objectFactory.createFunction(function (value) {

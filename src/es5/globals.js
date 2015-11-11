@@ -6,9 +6,7 @@ import $isNaN from "./global.is-nan";
 import $parseInt from "./global.parse-int";
 
 export default function (env) {
-	let globalObject = env.global;
-	let objectFactory = env.objectFactory;
-	let options = env.options;
+	let { global: globalObject, objectFactory, options } = env;
 
 	globalObject.define("Infinity", objectFactory.createPrimitive(Infinity), { configurable: false, writable: false });
 	globalObject.define("NaN", objectFactory.createPrimitive(NaN), { configurable: false, writable: false });

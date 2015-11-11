@@ -6,8 +6,7 @@ import $toString from "./number.to-string";
 import $valueOf from "./number.value-of";
 
 export default function numberApi (env) {
-	const globalObject = env.global;
-	const objectFactory = env.objectFactory;
+	const { global: globalObject, objectFactory } = env;
 
 	let proto = objectFactory.createObject();
 	proto.className = "Number";

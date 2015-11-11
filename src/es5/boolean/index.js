@@ -1,9 +1,10 @@
-import * as contracts from "../../utils/contracts";
 import {toBoolean,primitiveToObject} from "../../utils/native";
 
+import $toString from "./boolean.to-string";
+import $valueOf from "./boolean.value-of";
+
 export default function booleanApi (env) {
-	const globalObject = env.global;
-	const objectFactory = env.objectFactory;
+	const { global: globalObject, objectFactory } = env;
 
 	let proto = objectFactory.createObject();
 	proto.className = "Boolean";
@@ -20,15 +21,8 @@ export default function booleanApi (env) {
 		return objectFactory.create("Boolean", booleanValue);
 	}, proto, { configurable: false, enumerable: false, writable: false });
 
-	proto.define("toString", objectFactory.createBuiltInFunction(function () {
-		contracts.assertIsNotGeneric(this.node, "Boolean", "Boolean.prototype.toString");
-		return objectFactory.createPrimitive(String(this.node.value));
-	}, 0, "Boolean.prototype.toString"));
-
-	proto.define("valueOf", objectFactory.createBuiltInFunction(function () {
-		contracts.assertIsNotGeneric(this.node, "Boolean", "Boolean.prototype.valueOf");
-		return objectFactory.createPrimitive(this.node.value);
-	}, 0, "Boolean.prototype.valueOf"));
+	$toString(proto, env, objectFactory);
+	$valueOf(proto, env, objectFactory);
 
 	globalObject.define("Boolean", booleanClass);
 }

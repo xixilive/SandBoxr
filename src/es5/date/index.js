@@ -1,13 +1,18 @@
 import {toPrimitive,toNumber,toNativeFunction} from "../../utils/native";
 import {map} from "../../utils/async";
 
+import $parse from "./date.parse";
+import $utc from "./date.utc";
+import $valueOf from "./date.value-of";
+
 const staticMethods = ["now"];
+
 const protoMethods = ["getDate", "getDay", "getFullYear", "getHours", "getMilliseconds", "getMinutes", "getMonth", "getMilliseconds", "getMinutes", "getMonth", "getSeconds", "getTime", "getTimezoneOffset", "getUTCDay", "getUTCDate", "getUTCFullYear", "getUTCHours", "getUTCMilliseconds", "getUTCMinutes", "getUTCMonth", "getUTCSeconds", "getYear", "toDateString", "toGMTString", "toISOString", "toJSON", "toLocaleString", "toLocaleDateString", "toLocaleTimeString", "toString", "toTimeString", "toUTCString"];
+
 const setters = ["setDate", "setFullYear", "setHours", "setMilliseconds", "setMinutes", "setMonth", "setSeconds", "setTime", "setUTCDate", "setUTCFullYear", "setUTCHours", "setUTCMilliseconds", "setUTCMinutes", "setUTCMonth", "setUTCSeconds", "setYear"];
 
 export default function dateApi (env) {
-	const globalObject = env.global;
-	const objectFactory = env.objectFactory;
+	const { global: globalObject, objectFactory } = env;
 
 	let proto = objectFactory.createObject();
 	proto.className = "Date";
@@ -61,16 +66,9 @@ export default function dateApi (env) {
 		return objectFactory.createPrimitive(dateValue);
 	}, proto, { configurable: false, enumerable: false, writable: false });
 
-	dateClass.define("parse", objectFactory.createBuiltInFunction(function* (value) {
-		let stringValue = yield toPrimitive(value, "string");
-		let dateValue = Date.parse(stringValue);
-		return objectFactory.createPrimitive(dateValue);
-	}, 1, "Date.prototype.parse"));
-
-	dateClass.define("UTC", objectFactory.createBuiltInFunction(function* () {
-		let args = yield* map(arguments, function* (arg) { return yield toPrimitive(arg, "number"); });
-		return objectFactory.createPrimitive(Date.UTC.apply(null, args));
-	}, 7, "Date.prototype.UTC"));
+	$parse(dateClass, env, objectFactory);
+	$utc(dateClass, env, objectFactory);
+	$valueOf(proto, env, objectFactory);
 
 	staticMethods.forEach(name => {
 		dateClass.define(name, toNativeFunction(env, Date[name], "Date." + name));
@@ -88,10 +86,6 @@ export default function dateApi (env) {
 
 		proto.define(name, objectFactory.createBuiltInFunction(setter, Date.prototype[name].length, "Date.prototype." + name));
 	});
-
-	proto.define("valueOf", objectFactory.createBuiltInFunction(function () {
-		return objectFactory.createPrimitive(this.node.value.valueOf());
-	}, 0, "Date.prototype.valueOf"));
 
 	globalObject.define("Date", dateClass);
 }

@@ -3,7 +3,7 @@ import {PropertyDescriptor} from "./property-descriptor";
 const integerMatcher = /^\n+$/;
 
 function isSymbol (key) {
-	return key && typeof key !== "string" && key.isSymbol;
+	return key && typeof key === "object" && key.isSymbol;
 }
 
 function getPropertySource (key) {
@@ -17,12 +17,13 @@ function* propertyIterator (env, obj) {
 	let current = obj;
 	while (current) {
 		let keys = current.getOwnPropertyKeys("String");
+
 		for (let key of keys) {
 			let desc = current.getProperty(key);
 			if (desc) {
 				if (desc.enumerable && !(key in visited)) {
 					let value = objectFactory.createPrimitive(key);
-					yield objectFactory.createIteratorResult({value});
+					yield objectFactory.createIteratorResult({ value });
 				}
 
 				visited[key] = true;
@@ -32,7 +33,7 @@ function* propertyIterator (env, obj) {
 		current = current.getPrototype();
 	}
 
-	return objectFactory.createIteratorResult({done: true});
+	return objectFactory.createIteratorResult({ done: true });
 }
 
 function propertyKeyComparer (a, b) {
@@ -97,19 +98,19 @@ export class ObjectType {
 		return true;
 	}
 
-	getProperty (key, target) {
-		target = target || this;
+	getProperty (key, receiver) {
+		receiver = receiver || this;
 
 		let localKey = String(key);
 		let source = getPropertySource(key);
 
 		if (localKey in this[source]) {
-			return this[source][localKey].bind(target);
+			return this[source][localKey].bind(receiver);
 		}
 
 		let current = this.getPrototype();
 		if (current) {
-			return current.getProperty(key, target);
+			return current.getProperty(key, receiver);
 		}
 
 		return undefined;
@@ -176,7 +177,7 @@ export class ObjectType {
 				descriptor = receiverDescriptor;
 			}
 
-			if (descriptor.hasValue() && areSame(descriptor.getValue(), value)) {
+			if (descriptor.hasValue() && receiver.owns(key) && areSame(descriptor.getValue(), value)) {
 				return true;
 			}
 

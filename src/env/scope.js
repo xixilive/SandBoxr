@@ -1,7 +1,7 @@
 import {UNDEFINED} from "../types/primitive-type";
 import EstreeWalker from "../estree-walker";
 import {visit as hoister} from "./hoister";
-import * as contracts from "../utils/contracts";
+import {isStrictNode,assertIsValidParameterName} from "../utils/contracts";
 import rules from "../syntax-rules";
 import {each} from "../utils/async";
 import {declare} from "../utils/assign";
@@ -34,7 +34,7 @@ export class Scope {
 		}
 
 		let env = this.env;
-		this.scope.strict = contracts.isStrictNode(node.body);
+		this.scope.strict = isStrictNode(node.body);
 
 		let strict = this.scope.strict || env.isStrict();
 		if (strict && node.type === "Program") {
@@ -43,12 +43,12 @@ export class Scope {
 
 		hoister(node, decl => {
 			let name = decl.name || decl.id.name;
-			contracts.assertIsValidParameterName(name, strict);
+			assertIsValidParameterName(name, strict);
 
 			let value = UNDEFINED;
 			if (decl.type === "FunctionDeclaration") {
 				// functions can be used before they are defined
-				let strictFunc = strict || contracts.isStrictNode(decl.body.body);
+				let strictFunc = strict || isStrictNode(decl.body.body);
 				value = env.objectFactory.createFunction(decl, undefined, { strict: strictFunc });
 				value.bindScope(this);
 			} else if (this.scope.has(name)) {
@@ -62,7 +62,7 @@ export class Scope {
 
 	*loadComplexArgs (params, args, callee) {
 		let env = this.env;
-		let strict = env.isStrict() || contracts.isStrictNode(callee.node);
+		let strict = env.isStrict() || isStrictNode(callee.node);
 
 		// create a temporary scope for the argument declarations
 		let scope = this.createParameterScope();
@@ -127,7 +127,7 @@ export class Scope {
 		// todo: this method is getting far too complex
 		let env = this.env;
 		let scope = this.scope;
-		let strictCallee = contracts.isStrictNode(callee.node);
+		let strictCallee = isStrictNode(callee.node);
 		let strict = env.isStrict() || strictCallee;
 
 		let argumentList = env.objectFactory.createArguments(args, callee, strict);
@@ -159,7 +159,7 @@ export class Scope {
 					});
 				}
 
-				contracts.assertIsValidParameterName(name, strict);
+				assertIsValidParameterName(name, strict);
 				scope.setValue(name, value);
 			}
 		}

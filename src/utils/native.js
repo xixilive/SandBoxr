@@ -201,7 +201,7 @@ export function	toNativeFunction (env, fn, name) {
 		let thisArg = undefined;
 
 		if (this && this.node && (this.node.isPrimitive || this.node.className === "Date")) {
-			thisArg = this.node.toNative();
+			thisArg = this.node.value;
 		}
 
 		let args = yield getValues(arguments);

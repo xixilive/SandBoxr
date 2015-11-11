@@ -1,8 +1,8 @@
-import * as contracts from "./utils/contracts";
+import {assertIsValidName,assertIsValidIdentifier,assertAreValidArguments,isOctalLiteral} from "./utils/contracts";
 
 function validateAssignment (left, strict) {
 	if (strict && left.type === "Identifier") {
-		contracts.assertIsValidName(left.name, true);
+		assertIsValidName(left.name, true);
 	}
 }
 
@@ -12,29 +12,29 @@ const rules = {
 	},
 
 	CatchClause (node, strict) {
-		contracts.assertIsValidName(node.param.name, strict);
+		assertIsValidName(node.param.name, strict);
 	},
 
 	Identifier (node, strict) {
-		contracts.assertIsValidIdentifier(node.name, strict);
+		assertIsValidIdentifier(node.name, strict);
 	},
 
 	FunctionDeclaration (node, strict) {
-		contracts.assertIsValidName(node.id.name, strict);
-		contracts.assertAreValidArguments(node.params, strict);
+		assertIsValidName(node.id.name, strict);
+		assertAreValidArguments(node.params, strict);
 	},
 
 	FunctionExpression (node, strict) {
 		if (node.id) {
-			contracts.assertIsValidName(node.id.name, strict);
+			assertIsValidName(node.id.name, strict);
 		}
 
-		contracts.assertAreValidArguments(node.params, strict);
+		assertAreValidArguments(node.params, strict);
 	},
 
 	Literal (node, strict) {
 		if (strict && node.raw) {
-			if (contracts.isOctalLiteral(node.raw, node.value)) {
+			if (isOctalLiteral(node.raw, node.value)) {
 				throw SyntaxError("Octal literals are not allowed in strict mode.");
 			}
 		}
@@ -45,7 +45,7 @@ const rules = {
 	},
 
 	VariableDeclarator (node, strict) {
-		contracts.assertIsValidName(node.id.name, strict);
+		assertIsValidName(node.id.name, strict);
 	},
 
 	WithStatement (node, strict) {

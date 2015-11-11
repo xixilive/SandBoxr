@@ -122,8 +122,8 @@ gulp.task("test262-6", function () {
 });
 
 gulp.task("test262", () => {
-	// "!ch15/15.1/**/*.js", 
-	return test262({ files: ["**/*.js", "!intl402/**/*.js"] })
+	// "!ch15/15.1/**/*.js",
+	return test262({ files: ["ch15/15.10/**/*.js", "!ch15/15.1/**/*.js", "!intl402/**/*.js"] })
 		.pipe(through.obj((file, enc, cb) => {
 			let filename = path.basename(file.path);
 			let src = file.contents.toString();

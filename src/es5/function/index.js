@@ -12,9 +12,7 @@ import $toString from "./function.to-string";
 const frozen = { configurable: false, enumerable: false, writable: false };
 
 export default function functionApi (env) {
-	const options = env.options;
-	const globalObject = env.global;
-	const objectFactory = env.objectFactory;
+	const { global: globalObject, objectFactory, options } = env;
 
 	let funcClass;
 

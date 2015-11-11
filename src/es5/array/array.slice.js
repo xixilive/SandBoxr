@@ -17,12 +17,12 @@ export default function ($target, env, factory) {
 		begin = getStartIndex(begin, length);
 		end = getEndIndex(end, length);
 
-		let arr = factory.create("Array");
+		let arr = factory.createArray();
 		let newLength = 0;
 
 		for (let {key, value} of iterate.forward(source, begin, end)) {
 			let index = key - begin;
-			arr.setValue(index, value);
+			arr.setIndex(index, value);
 			newLength = ++index;
 		}
 

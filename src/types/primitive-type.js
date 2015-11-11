@@ -1,5 +1,5 @@
 import {ObjectType} from "./object-type";
-import * as contracts from "../utils/contracts";
+import {getType} from "../utils/contracts";
 
 export class PrimitiveType extends ObjectType {
 	constructor (value) {
@@ -9,7 +9,7 @@ export class PrimitiveType extends ObjectType {
 		this.value = value;
 		this.type = typeof value;
 
-		this.className = contracts.getType(value);
+		this.className = getType(value);
 	}
 
 	getProperty (name) {
