@@ -47,7 +47,7 @@ export default function* UnaryExpression (context) {
 
 				if (context.env.isStrict()) {
 					if (!resolved || !(result instanceof PropertyReference) || result.unqualified) {
-						return context.raise(new SyntaxError("Delete of an unqualified identifier in strict mode."));
+						return context.raise(SyntaxError("Delete of an unqualified identifier in strict mode."));
 					}
 				}
 
@@ -55,7 +55,7 @@ export default function* UnaryExpression (context) {
 					deleted = result.delete();
 				}
 			} else if (context.node.argument.object) {
-				return context.raise(new ReferenceError(`${context.node.argument.object.name} is not defined`));
+				return context.raise(ReferenceError(`${context.node.argument.object.name} is not defined`));
 			}
 
 			newValue = objectFactory.createPrimitive(deleted);
@@ -66,7 +66,7 @@ export default function* UnaryExpression (context) {
 			break;
 
 		default:
-			return context.raise(new SyntaxError(`Unknown unary operator: ${context.node.operator}`));
+			return context.raise(SyntaxError(`Unknown unary operator: ${context.node.operator}`));
 	}
 
 	return context.result(newValue);

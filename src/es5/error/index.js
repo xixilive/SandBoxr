@@ -1,11 +1,10 @@
 import {toString} from "../../utils/native";
-import * as contracts from "../../utils/contracts";
+import {isNullOrUndefined} from "../../utils/contracts";
 
 const errorTypes = ["TypeError", "ReferenceError", "SyntaxError", "RangeError", "URIError", "EvalError"];
 
 export default function errorApi (env) {
-	const globalObject = env.global;
-	const objectFactory = env.objectFactory;
+	const { global: globalObject, objectFactory } = env;
 
 	let proto = objectFactory.createObject();
 	proto.className = "Error";
@@ -14,7 +13,7 @@ export default function errorApi (env) {
 
 	let errorClass = objectFactory.createFunction(function* (message) {
 		let messageString;
-		if (!contracts.isNullOrUndefined(message)) {
+		if (!isNullOrUndefined(message)) {
 			messageString = yield toString(message);
 		}
 

@@ -37,7 +37,7 @@ const iterate = {
 			return StringIterator.create(obj, lo);
 		}
 
-		if (arrayIsSparse(obj, hi)) {
+		if (obj.className !== "Array" || arrayIsSparse(obj, hi)) {
 			return SparseIterator.create(obj, lo, hi - 1);
 		}
 

@@ -1,4 +1,3 @@
-import {execute as exec} from "../utils/func";
 import {map} from "../utils/async";
 
 let templateObjectCache = Object.create(null);
@@ -37,6 +36,6 @@ export default function* TaggedTemplateExpression (context) {
 
 	let callee = (yield context.create(context.node.tag).execute()).result;
 	let func = callee.getValue();
-	let value = yield exec(context.env, func, [templateObject, ...values], callee.base, callee);
+	let value = yield func.call(callee.base, [templateObject, ...values], callee);
 	return context.result(value);
 }

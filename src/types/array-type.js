@@ -1,6 +1,6 @@
 import {ObjectType} from "./object-type";
 import {toNumber,toUInt32} from "../utils/native";
-import * as contracts from "../utils/contracts";
+import {assertIsValidArrayLength,isValidArrayLength,isInteger} from "../utils/contracts";
 import iterate from "../iterators";
 import {exhaust as x} from "../utils/async";
 
@@ -59,7 +59,7 @@ export class ArrayType extends ObjectType {
 		descriptor.value = env.objectFactory.createPrimitive(newLengthValue);
 		let newLength = descriptor.value;
 		let currentLength = this.getValue("length");
-		contracts.assertIsValidArrayLength(newLength.toNative());
+		assertIsValidArrayLength(newLength.toNative());
 
 		if (newLength.toNative() >= currentLength.toNative()) {
 			return super.defineOwnProperty("length", descriptor, throwOnError);
@@ -110,7 +110,7 @@ export class ArrayType extends ObjectType {
 	}
 
 	defineOwnProperty (name, descriptor, throwOnError) {
-		if (contracts.isInteger(name) && contracts.isValidArrayLength(Number(name) + 1) && !this.owns(name)) {
+		if (isInteger(name) && isValidArrayLength(Number(name) + 1) && !this.owns(name)) {
 			return this.setIndex(name, null, descriptor, throwOnError);
 		}
 

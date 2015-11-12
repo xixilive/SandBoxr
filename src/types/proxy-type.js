@@ -1,6 +1,6 @@
 import {ObjectType} from "./object-type";
 import {UNDEFINED} from "./primitive-type";
-import * as contracts from "../utils/contracts";
+import {isUndefined,assertIsFunction,isObject,isNull} from "../utils/contracts";
 import {exhaust as x} from "../utils/async";
 import {toBoolean,toArray} from "../utils/native";
 import {PropertyDescriptor} from "./property-descriptor";
@@ -14,11 +14,11 @@ function getProxyMethod (proxy, key) {
 	}
 
 	let method = handler.getValue();
-	if (contracts.isUndefined(method)) {
+	if (isUndefined(method)) {
 		return null;
 	}
 
-	contracts.assertIsFunction(method, key);
+	assertIsFunction(method, key);
 	return method;
 }
 
@@ -64,7 +64,7 @@ function toPropertyDescriptor (env, descriptor) {
 
 function toCall (proxy, methodName) {
 	let proxyMethod = getProxyMethod(proxy, "apply");
-	if (contracts.isUndefined(proxyMethod)) {
+	if (isUndefined(proxyMethod)) {
 		return proxy.target.getValue(methodName);
 	}
 
@@ -102,7 +102,7 @@ export class ProxyType extends ObjectType {
 		assertIsNotRevoked(this, "apply");
 
 		let proxyMethod = getProxyMethod(this, "apply");
-		if (contracts.isUndefined(proxyMethod)) {
+		if (isUndefined(proxyMethod)) {
 			return yield this.target.call(...arguments);
 		}
 
@@ -114,13 +114,13 @@ export class ProxyType extends ObjectType {
 		assertIsNotRevoked(this, "construct");
 
 		let proxyMethod = getProxyMethod(this, "construct");
-		if (contracts.isUndefined(proxyMethod)) {
+		if (isUndefined(proxyMethod)) {
 			return yield this.target.construct(...arguments);
 		}
 
 		let argsArray = this[envSymbol].objectFactory.createArray(args);
 		let newObj = yield proxyMethod.call(this.handler, [this.target, argsArray, this]);
-		if (!contracts.isObject(newObj)) {
+		if (!isObject(newObj)) {
 			throwProxyInvariantError("construct");
 		}
 
@@ -179,7 +179,7 @@ export class ProxyType extends ObjectType {
 				throwProxyInvariantError("get");
 			}
 
-			if (!propInfo.dataProperty && contracts.isUndefined(propInfo.get) && !contracts.isUndefined(value)) {
+			if (!propInfo.dataProperty && isUndefined(propInfo.get) && !isUndefined(value)) {
 				throwProxyInvariantError("get");
 			}
 		}
@@ -205,7 +205,7 @@ export class ProxyType extends ObjectType {
 		let hasDescriptor = !!propInfo;
 		let frozen = !this.target.isExtensible() || (hasDescriptor && !propInfo.configurable);
 
-		if (contracts.isUndefined(descriptor)) {
+		if (isUndefined(descriptor)) {
 			if (frozen) {
 				throwProxyInvariantError("getOwnPropertyDescriptor");
 			}
@@ -251,7 +251,7 @@ export class ProxyType extends ObjectType {
 		}
 
 		let proto = x(proxyMethod.call(this.handler, [this.target]));
-		if (!contracts.isObject(proto) && !contracts.isNull(proto)) {
+		if (!isObject(proto) && !isNull(proto)) {
 			throwProxyInvariantError("getPrototypeOf");
 		}
 
@@ -326,7 +326,7 @@ export class ProxyType extends ObjectType {
 		assertIsNotRevoked(this, "deleteProperty");
 
 		let proxyMethod = getProxyMethod(this, "deleteProperty");
-		if (contracts.isUndefined(proxyMethod)) {
+		if (isUndefined(proxyMethod)) {
 			return this.target.deleteProperty(key, throwOnError);
 		}
 
@@ -346,7 +346,7 @@ export class ProxyType extends ObjectType {
 		assertIsNotRevoked(this, "defineProperty");
 
 		let proxyMethod = getProxyMethod(this, "defineProperty");
-		if (contracts.isUndefined(proxyMethod)) {
+		if (isUndefined(proxyMethod)) {
 			return this.target.defineOwnProperty(...arguments);
 		}
 
@@ -376,7 +376,7 @@ export class ProxyType extends ObjectType {
 		assertIsNotRevoked(this, "ownKeys");
 
 		let proxyMethod = getProxyMethod(this, "ownKeys");
-		if (contracts.isUndefined(proxyMethod)) {
+		if (isUndefined(proxyMethod)) {
 			return this.target.getOwnPropertyKeys(keyType);
 		}
 
@@ -408,12 +408,12 @@ export class ProxyType extends ObjectType {
 		assertIsNotRevoked(this, "enumerate");
 
 		let proxyMethod = getProxyMethod(this, "enumerate");
-		if (contracts.isUndefined(proxyMethod)) {
+		if (isUndefined(proxyMethod)) {
 			return this.target.getIterator();
 		}
 
 		let result = x(proxyMethod.call(this.handler, [this.target]));
-		if (!contracts.isObject(result)) {
+		if (!isObject(result)) {
 			throwProxyInvariantError("enumerate");
 		}
 
@@ -424,7 +424,7 @@ export class ProxyType extends ObjectType {
 		assertIsNotRevoked(this, "set");
 
 		let proxyMethod = getProxyMethod(this, "set");
-		if (contracts.isUndefined(proxyMethod)) {
+		if (isUndefined(proxyMethod)) {
 			return this.target.setValue(...arguments);
 		}
 
@@ -439,7 +439,7 @@ export class ProxyType extends ObjectType {
 					throwProxyInvariantError("set");
 				}
 
-				if (!propInfo.dataProperty && contracts.isUndefined(propInfo.set)) {
+				if (!propInfo.dataProperty && isUndefined(propInfo.set)) {
 					throwProxyInvariantError("set");
 				}
 			}

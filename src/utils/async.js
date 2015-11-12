@@ -54,7 +54,7 @@ function tryCatch (it, priorValue, method) {
 		let { done, value } = it[method](priorValue);
 		return { state: "next", done, value };
 	} catch (err) {
-		return { state: "throw", value: err };
+		return { state: "throw", done: false, value: err };
 	}
 }
 

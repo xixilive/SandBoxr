@@ -33,7 +33,7 @@ export default function* CallExpression (context) {
 
 	if (!fn || fn.className !== "Function") {
 		let stringValue = yield toString(fn);
-		return context.raise(new TypeError(`${stringValue} not a function`));
+		return context.raise(TypeError(`${stringValue} not a function`));
 	}
 
 	let native = fn.native;
@@ -43,5 +43,4 @@ export default function* CallExpression (context) {
 	callee.identifier = fn.name;
 	let result = yield fn[isNew ? "construct" : "call"](thisArg, args, callee);
 	return context.result(result || UNDEFINED);
-	// return context.result(yield (isNew ? construct : exec)(context.env, fn, args, thisArg, callee));
 }

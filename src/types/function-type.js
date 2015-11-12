@@ -1,7 +1,7 @@
 import {ObjectType} from "./object-type";
 import {PropertyDescriptor} from "./property-descriptor";
 import {UNDEFINED} from "./primitive-type";
-import * as contracts from "../utils/contracts";
+import {isStrictNode,isNullOrUndefined,isObject} from "../utils/contracts";
 
 function getParameterLength (params) {
 	for (let i = 0, ln = params.length; i < ln; i++) {
@@ -99,7 +99,7 @@ export class FunctionType extends ObjectType {
 			return false;
 		}
 
-		return (this.strict = contracts.isStrictNode(this.node.body.body));
+		return (this.strict = isStrictNode(this.node.body.body));
 	}
 
 	// createScope (env, thisArg, isNew) {
@@ -130,7 +130,7 @@ export class FunctionType extends ObjectType {
 		let current = obj;
 
 		let proto = this.getValue("prototype");
-		if (contracts.isNullOrUndefined(proto) || !contracts.isObject(proto)) {
+		if (isNullOrUndefined(proto) || !isObject(proto)) {
 			throw TypeError("Function has non-object prototype in instanceof check");
 		}
 

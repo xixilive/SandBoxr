@@ -9,7 +9,7 @@ import operators from "../utils/operators";
 import {assertIsValidIdentifier} from "../utils/contracts";
 import {Scope} from "./scope";
 
-let defaultOptions = {
+const defaultOptions = {
 	allowDebugger: false,
 	useStrict: false,
 	ecmaVersion: 5

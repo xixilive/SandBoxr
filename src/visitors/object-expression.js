@@ -1,4 +1,4 @@
-import * as contracts from "../utils/contracts";
+import {assertAreValidArguments} from "../utils/contracts";
 import {each} from "../utils/async";
 import {toPropertyKey} from "../utils/native";
 
@@ -6,14 +6,14 @@ function setDescriptor (env, obj, descriptor) {
 	let strict = env.isStrict();
 
 	if (descriptor.get) {
-		contracts.assertAreValidArguments(descriptor.get.node.params, strict);
+		assertAreValidArguments(descriptor.get.node.params, strict);
 		descriptor.getter = function* () {
 			return yield descriptor.get.call(this);
 		};
 	}
 
 	if (descriptor.set) {
-		contracts.assertAreValidArguments(descriptor.set.node.params, strict);
+		assertAreValidArguments(descriptor.set.node.params, strict);
 		descriptor.setter = function* (value) {
 			yield descriptor.set.call(this, [value]);
 		};

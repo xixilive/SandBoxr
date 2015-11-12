@@ -12,7 +12,7 @@ import {IteratorType} from "./iterator-type";
 import {SymbolType} from "./symbol-type";
 import {CollectionType} from "./collection-type";
 import {ProxyType} from "./proxy-type";
-import * as contracts from "../utils/contracts";
+import {getType,assertIsObject} from "../utils/contracts";
 
 let orphans = Object.create(null);
 const functionNameMatcher = /([^.]+(?:\[Symbol\.\w+\])?)$/;
@@ -69,7 +69,7 @@ export class ObjectFactory {
 	 * @returns {ObjectType} The primitive instance.
 	 */
 	createPrimitive (value) {
-		return this.create(contracts.getType(value), value);
+		return this.create(getType(value), value);
 	}
 
 	/**
@@ -196,8 +196,8 @@ export class ObjectFactory {
 	}
 
 	createProxy (target, handler) {
-		contracts.assertIsObject(target, "Proxy");
-		contracts.assertIsObject(handler, "Proxy");
+		assertIsObject(target, "Proxy");
+		assertIsObject(handler, "Proxy");
 
 		if (target.isProxy && target.revoked) {
 			throw TypeError();

@@ -1,6 +1,6 @@
 import {NativeFunctionType} from "../../types/native-function-type";
 import {UNDEFINED} from "../../types/primitive-type";
-import * as contracts from "../../utils/contracts";
+import {isNull,isUndefined,isStrictNode} from "../../utils/contracts";
 import {toString} from "../../utils/native";
 import {map} from "../../utils/async";
 
@@ -25,11 +25,11 @@ export default function functionApi (env) {
 
 			if (args.length > 0) {
 				params = (yield map(args, function* (arg, index) {
-					if (contracts.isNull(arg)) {
+					if (isNull(arg)) {
 						throw SyntaxError("Unexpected token null");
 					}
 
-					return contracts.isUndefined(arg) ? "" : (yield toString(arg));
+					return isUndefined(arg) ? "" : (yield toString(arg));
 				}))
 				// the spec allows parameters to be comma-delimited, so we will join and split again comma
 				.join(",");
@@ -39,7 +39,7 @@ export default function functionApi (env) {
 			let ast = options.parser(`(function(${params}){${bodyString}}).apply($this,$args);`);
 			let callee = ast.body[0].expression.callee.object;
 			let userNode = callee.body.body;
-			let strict = contracts.isStrictNode(userNode);
+			let strict = isStrictNode(userNode);
 
 			let wrappedFunc = function* () {
 				let thisArg;
@@ -48,7 +48,7 @@ export default function functionApi (env) {
 				} else {
 					thisArg = this.node;
 
-					if (!strict && contracts.isUndefined(thisArg)) {
+					if (!strict && isUndefined(thisArg)) {
 						thisArg = globalObject;
 					}
 				}
