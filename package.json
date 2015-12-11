@@ -42,7 +42,6 @@
     "yargs": "^3.10.0"
   },
   "optionalDependencies": {
-    "test262-streamer": "^0.3.0",
     "esprima": "^2.4.1"
   }
 }

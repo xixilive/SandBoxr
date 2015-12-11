@@ -85,6 +85,11 @@ export default {
 			throw TypeError(`No handler defined for: ${context.node.type}`);
 		}
 
+		let ob = context.env.visitObserver;
+		if(ob && 'function' === typeof ob.notify){
+			ob.notify(context);
+		}
+
 		return yield visitors[context.node.type](context);
 	}
 };

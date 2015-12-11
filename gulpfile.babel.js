@@ -10,7 +10,7 @@ import rename from "gulp-rename";
 // import header from "gulp-header";
 // import sourcemaps from "gulp-sourcemaps";
 import gutil from "gulp-util";
-import "./tasks/test262";
+// import "./tasks/test262";
 
 // const banner = [
 // 	"/**",
@@ -35,7 +35,7 @@ gulp.task("lint", () => {
 
 gulp.task("build", () => {
 	// let pkg = require("./package.json");
-	
+
 	return browserify({standalone: "SandBoxr", debug: false})
 		.transform(babelify.configure({optional: ["runtime"]}))
 		.require("./", {entry: true})
@@ -45,7 +45,7 @@ gulp.task("build", () => {
 		.pipe(buffer())
 		// .pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./dist"))
-	
+
 		.pipe(rename("sandboxr.min.js"))
 		// .pipe(sourcemaps.init({loadMaps: true}))
 		.pipe(uglify({preserveComments: "license"}))
