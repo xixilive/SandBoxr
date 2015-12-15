@@ -4,4 +4,3 @@ jsconfig.json
 .settings
 .vscode
 npm-debug.log
-dist/
