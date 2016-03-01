@@ -9402,9 +9402,11 @@ exports["default"] = function (env) {
 	proto.define("compile", (0, _utilsNative.toNativeFunction)(env, RegExp.prototype.compile, "RegExp.prototype.compile"));
 	proto.defineOwnProperty("lastIndex", { value: objectFactory.createPrimitive(0), writable: true });
 
-	["global", "ignoreCase", "multiline", "source"].forEach(function (name) {
-		proto.defineOwnProperty(name, { value: objectFactory.createPrimitive(RegExp.prototype[name]) });
+	["global", "ignoreCase", "multiline"].forEach(function (name) {
+		proto.defineOwnProperty(name, { value: objectFactory.createPrimitive(false) });
 	});
+
+	proto.defineOwnProperty("source", { value: objectFactory.createPrimitive("") });
 
 	globalObject.define("RegExp", regexClass);
 };
